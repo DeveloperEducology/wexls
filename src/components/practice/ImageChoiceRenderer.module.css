@@ -1,0 +1,197 @@
+.container {
+    width: 100%;
+    max-width: 900px;
+}
+
+.questionCard {
+    background: white;
+    border-radius: var(--border-radius-xl);
+    padding: 2.5rem;
+    box-shadow: var(--card-shadow);
+    animation: fadeIn 0.4s ease-out;
+    min-width: 600px;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.questionContent {
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.contentWrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.optionsGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.optionsGrid.vertical {
+    flex-direction: column;
+    align-items: center;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.option {
+    background: #ffffff;
+    border: 3px solid #9fdcf8;
+    border-radius: var(--border-radius-lg);
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    min-height: 140px;
+    width: fit-content;
+    min-width: 150px;
+    max-width: 240px;
+}
+
+.option:hover:not(.disabled) {
+    border-color: #74c9f2;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(31, 122, 214, 0.14);
+}
+
+.option.selected {
+    border-color: #22c55e;
+    background: #e9f8ef;
+    transform: scale(1.02);
+}
+
+.option.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.checkbox {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 28px;
+    height: 28px;
+    border: 3px solid #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #22c55e;
+    background: white;
+    z-index: 1;
+}
+
+.imageWrapper {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.optionImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+    border-radius: var(--border-radius-sm);
+}
+
+.inlineSvg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inlineSvg svg {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.optionFallback {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.optionText {
+    font-size: 0.95rem;
+    color: #0f172a;
+    text-align: center;
+    font-weight: 600;
+}
+
+.submitButton {
+    width: min(220px, 100%);
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    color: white;
+    border: none;
+    padding: 0.62rem 1rem;
+    border-radius: var(--border-radius-lg);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: var(--transition-base);
+    flex-shrink: 0;
+    margin: auto auto 0;
+    display: block;
+}
+
+.submitButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+@media (max-width: 768px) {
+    .questionCard {
+        padding: 1.5rem;
+        min-width: auto;
+        max-height: 80vh;
+    }
+
+    .questionContent {
+        font-size: 0.96rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .optionsGrid {
+        justify-content: center;
+    }
+
+    .option {
+        padding: 0.55rem;
+        min-height: 92px;
+        min-width: 120px;
+        max-width: 180px;
+        margin: 0 auto;
+    }
+
+    .imageWrapper {
+        height: 72px;
+    }
+}

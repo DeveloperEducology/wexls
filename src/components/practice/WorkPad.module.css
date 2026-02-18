@@ -1,0 +1,97 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 15, 28, 0.4);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.inlineContainer {
+  width: 100%;
+  padding: 0;
+}
+
+.panel {
+  width: min(960px, 96vw);
+  background: #f7fcff;
+  border: 1px solid #b9dcf2;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(9, 46, 74, 0.28);
+  padding: 0.85rem;
+}
+
+.inlinePanel {
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 10px 22px rgba(9, 46, 74, 0.15);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.6rem;
+}
+
+.toolButton,
+.closeButton {
+  border: 1px solid #88c8eb;
+  background: #fff;
+  color: #0c4f7c;
+  border-radius: 9px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toolButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.active {
+  background: #0f6ea8;
+  color: #fff;
+  border-color: #0f6ea8;
+}
+
+.closeButton {
+  margin-left: auto;
+  background: #7bc043;
+  border-color: #7bc043;
+  color: #fff;
+}
+
+.canvas {
+  width: 100%;
+  height: min(46vh, 420px);
+  background: #ffffff;
+  border: 2px dashed #9bd1ef;
+  border-radius: 10px;
+  touch-action: none;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .panel {
+    padding: 0.65rem;
+  }
+
+  .toolbar {
+    gap: 0.35rem;
+  }
+
+  .toolButton,
+  .closeButton {
+    font-size: 0.74rem;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .canvas {
+    height: min(44vh, 300px);
+  }
+}

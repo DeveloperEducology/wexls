@@ -1,0 +1,137 @@
+.gradeCard {
+    background: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-base);
+    cursor: pointer;
+    border: 2px solid transparent;
+    animation: fadeIn 0.6s ease-out backwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.gradeCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--card-color);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gradeCard:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--card-color);
+}
+
+.gradeCard:hover::before {
+    transform: scaleX(1);
+}
+
+.cardHeader {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gradeBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--border-radius-xl);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: var(--transition-base);
+}
+
+.gradeCard:hover .gradeBadge {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.cardContent {
+    padding-top: 0.5rem;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+    min-height: 3rem;
+}
+
+.subjectsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.subjectItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    transition: var(--transition-base);
+    text-decoration: none;
+    color: inherit;
+}
+
+.subjectItem:hover {
+    padding-left: 0.5rem;
+}
+
+.subjectName {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.skillCount {
+    color: #3b82f6;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition-base);
+}
+
+.subjectItem:hover .skillCount {
+    color: #2563eb;
+    transform: translateX(3px);
+}
+
+.noSubjects {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+
+
+@media (max-width: 768px) {
+    .gradeCard {
+        padding: 1.25rem;
+    }
+
+    .gradeBadge {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .description {
+        font-size: 0.9rem;
+    }
+}

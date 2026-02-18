@@ -1,0 +1,95 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: linear-gradient(180deg, #dff3ff 0%, #eef9ff 45%, #f8fcff 100%);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #d8e9f7;
+  border-radius: 16px;
+  box-shadow: 0 16px 30px rgba(19, 92, 143, 0.12);
+  padding: 1.25rem;
+}
+
+.card h1 {
+  font-size: 1.35rem;
+  color: #133a56;
+  margin-bottom: 0.2rem;
+}
+
+.sub {
+  font-size: 0.86rem;
+  color: #5f7890;
+  margin-bottom: 0.95rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #2c506c;
+}
+
+.form input {
+  border: 1px solid #c8dfef;
+  border-radius: 10px;
+  padding: 0.62rem 0.72rem;
+  font-size: 0.92rem;
+  color: #1f2f46;
+}
+
+.form input:focus {
+  outline: none;
+  border-color: #0f8cd1;
+  box-shadow: 0 0 0 3px rgba(15, 140, 209, 0.15);
+}
+
+.form button {
+  margin-top: 0.3rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 0.65rem 0.8rem;
+}
+
+.form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 0.78rem;
+  color: #b42318;
+  font-weight: 700;
+}
+
+.success {
+  font-size: 0.78rem;
+  color: #067647;
+  font-weight: 700;
+}
+
+.switch {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: #47647e;
+}
+
+.switch a {
+  color: #0f6ea8;
+  font-weight: 700;
+}

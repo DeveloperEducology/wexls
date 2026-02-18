@@ -1,0 +1,357 @@
+.container {
+    width: 100%;
+    max-width: 700px;
+}
+
+.questionCard {
+    background: white;
+    border-radius: var(--border-radius-xl);
+    padding: 2.5rem;
+    box-shadow: var(--card-shadow);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.questionContent {
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--text-primary);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.partWrapper {
+    display: inline-flex;
+    align-items: center;
+}
+
+.inlinePart {
+    width: auto;
+}
+
+.verticalPart {
+    width: 100%;
+}
+
+.text {
+    display: inline;
+}
+
+.textWithSpeaker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.inlineSpeaker {
+    width: 24px;
+    height: 24px;
+}
+
+.imageContainer {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    vertical-align: middle;
+    margin: 0 0.25rem;
+}
+
+.image {
+    border-radius: 4px;
+}
+
+.sequence {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.96rem;
+    border: 2px solid #cbd5e1;
+    border-radius: var(--border-radius-sm);
+    text-align: center;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.input:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.arithmeticLayout {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --ar-cell-size: 44px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0.25rem auto 0.5rem;
+    color: #111827;
+}
+
+.arTextRow {
+    line-height: 1.1;
+}
+
+.arLabelRow {
+    display: flex;
+    justify-content: end;
+    align-items: end;
+    gap: 1.2rem;
+    min-height: 52px;
+    margin-bottom: 0.15rem;
+    padding-right: 0.1rem;
+}
+
+.arLabelWord {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    font-family: "Nunito", "Baloo 2", "Segoe UI", sans-serif;
+}
+
+.arGridRow {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 1), var(--ar-cell-size));
+    justify-content: end;
+    align-items: end;
+}
+
+.arGridCell {
+    width: var(--ar-cell-size);
+    height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.arDivider {
+    border-top: 2px solid #111827;
+    margin: 0.15rem 0 0.25rem;
+    width: calc(var(--cols, 1) * var(--ar-cell-size));
+}
+
+.arAnswerRow {
+    line-height: 1;
+}
+
+.arPrefixCell {
+    color: #1f2f46;
+}
+
+.arCellInput {
+    width: 38px;
+    height: 46px;
+    border: 1px dashed #1991db;
+    background: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.arCellInputActive {
+    border-color: #0f6ea8;
+    box-shadow: inset 0 0 0 1px #0f6ea8;
+    background: #f0f9ff;
+}
+
+.arCellInput:focus {
+    outline: none;
+    border-color: #0f6ea8;
+    box-shadow: inset 0 0 0 1px #0f6ea8;
+}
+
+.arDigitPad {
+    margin-top: 0.8rem;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.arPadBtn {
+    border: 1px solid #b9d8ef;
+    border-radius: 8px;
+    background: #fff;
+    color: #1f2f46;
+    font-size: 0.95rem;
+    font-weight: 700;
+    height: 34px;
+    cursor: pointer;
+}
+
+.arPadBtn:hover {
+    border-color: #7fbce4;
+    background: #f5fbff;
+}
+
+.pictureEq {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    align-items: end;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.pictureTerm {
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.pictureEmoji {
+    min-height: 42px;
+    font-size: 2rem;
+    line-height: 1.05;
+    letter-spacing: 0.03em;
+    text-align: center;
+}
+
+.pictureOp {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #18283d;
+    line-height: 1;
+    align-self: center;
+}
+
+.pictureBox {
+    width: 86px;
+    height: 44px;
+    border: 2px solid #8d8d8d;
+    border-radius: 2px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.pictureBox:focus {
+    outline: none;
+    border-color: #0f6ea8;
+    box-shadow: 0 0 0 2px rgba(15, 110, 168, 0.14);
+}
+
+.pictureFooter {
+    grid-column: 1 / -1;
+    text-align: left;
+    font-size: 1.4rem;
+    margin-top: 0.15rem;
+}
+
+.submitButton {
+    width: min(220px, 100%);
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    color: white;
+    border: none;
+    padding: 0.62rem 1rem;
+    border-radius: var(--border-radius-lg);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: var(--transition-base);
+    margin: 0.75rem auto 0;
+    display: block;
+}
+
+.submitButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+@media (max-width: 768px) {
+    .questionCard {
+        padding: 1.5rem;
+    }
+
+    .questionContent {
+        font-size: 0.96rem;
+        line-height: 1.8;
+    }
+
+    .input {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+    }
+
+    .arithmeticLayout {
+        --ar-cell-size: 36px;
+    }
+
+    .arGridCell {
+        width: var(--ar-cell-size);
+        height: 44px;
+        font-size: 1.6rem;
+    }
+
+    .arLabelRow {
+        min-height: 44px;
+        gap: 0.9rem;
+    }
+
+    .arLabelWord {
+        font-size: 1.6rem;
+    }
+
+    .arCellInput {
+        width: 30px;
+        height: 38px;
+        font-size: 1.3rem;
+    }
+
+    .arDigitPad {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.35rem;
+    }
+
+    .arPadBtn {
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .pictureEq {
+        grid-template-columns: auto;
+        justify-items: center;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .pictureTerm {
+        min-width: 0;
+    }
+
+    .pictureEmoji {
+        font-size: 1.65rem;
+        min-height: 34px;
+    }
+
+    .pictureOp {
+        font-size: 1.7rem;
+    }
+
+    .pictureBox {
+        width: 78px;
+        height: 40px;
+        font-size: 1.15rem;
+    }
+
+    .pictureFooter {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+}

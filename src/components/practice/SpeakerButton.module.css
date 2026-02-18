@@ -1,0 +1,21 @@
+.speakerButton {
+  border: none;
+  background: transparent;
+  color: #0ea5e9;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.speakerButton:hover {
+  color: #0284c7;
+}
+
+.speakerIcon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

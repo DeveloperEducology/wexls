@@ -1,0 +1,133 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.homeLink {
+  color: #0f6ea8;
+  font-weight: 700;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.controls input {
+  border: 1px solid #cfe3f3;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.9rem;
+}
+
+.controls button {
+  background: #0f6ea8;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  font-weight: 700;
+}
+
+.error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kpi {
+  background: #fff;
+  border: 1px solid #d9ebf8;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+}
+
+.kpi span {
+  display: block;
+  font-size: 0.72rem;
+  color: #6b8097;
+  text-transform: uppercase;
+}
+
+.kpi strong {
+  font-size: 1.05rem;
+  color: #22394f;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.chartCard {
+  background: #fff;
+  border: 1px solid #d9ebf8;
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+}
+
+.chartCard h3 {
+  font-size: 0.8rem;
+  color: #2f4d67;
+  margin-bottom: 0.35rem;
+}
+
+.chart {
+  width: 100%;
+  height: 150px;
+  background: #f8fcff;
+  border-radius: 8px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #d9ebf8;
+  border-radius: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #ecf3f9;
+  padding: 0.45rem 0.5rem;
+  text-align: left;
+}
+
+.table th {
+  font-size: 0.72rem;
+  color: #5a738d;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

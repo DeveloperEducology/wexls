@@ -1,0 +1,162 @@
+
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <!-- Improved Sky gradient for softer blue -->
+  <defs>
+    <linearGradient id="skyImproved" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d9f0ff" />
+      <stop offset="50%" stop-color="#b3e0ff" />
+      <stop offset="100%" stop-color="#8fd3ff" />
+    </linearGradient>
+    
+    <linearGradient id="hillBack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c2e8c2" />
+      <stop offset="100%" stop-color="#8fd08f" />
+    </linearGradient>
+    
+    <linearGradient id="hillMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#b0ddb0" />
+      <stop offset="100%" stop-color="#7ec07e" />
+    </linearGradient>
+    
+    <linearGradient id="hillFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9ed29e" />
+      <stop offset="100%" stop-color="#6bb06b" />
+    </linearGradient>
+    
+    <linearGradient id="riverImproved" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9ed4ff" />
+      <stop offset="100%" stop-color="#6bbfff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1600" height="900" fill="url(#skyImproved)" />
+
+  <!-- Distant mountains, softer -->
+  <path d="M0 450 Q350 280 750 430 T1500 410 L1600 900 L0 900 Z" fill="#b3c8d8" opacity="0.7" />
+  <path d="M150 430 Q550 260 950 410 T1550 390 L1600 900 L0 900 Z" fill="#a6bcd0" opacity="0.8" />
+
+  <!-- Rolling hills - back layer, adjusted curves -->
+  <path d="M0 500 Q250 400 550 520 T1150 480 T1550 500 L1600 900 L0 900 Z" fill="url(#hillBack)" />
+
+  <!-- Middle hills -->
+  <path d="M-50 560 Q150 460 450 580 T850 560 T1350 590 L1600 900 L0 900 Z" fill="url(#hillMid)" />
+
+  <!-- Front hills, more rolling -->
+  <path d="M-150 650 Q50 550 350 670 T750 650 T1250 690 L1600 900 L0 900 Z" fill="url(#hillFront)" />
+
+  <!-- Calm river, more winding to match S-shape -->
+  <path d="M400 600 Q600 660 900 620 Q1200 580 1400 640 L1500 700 Q1100 760 700 720 Q300 680 200 660 Z" fill="url(#riverImproved)" stroke="#5ca0ce" stroke-width="3" opacity="0.92" />
+  
+  <!-- River reflection/highlight -->
+  <path d="M400 600 Q600 660 900 620 Q1200 580 1400 640" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.2" />
+
+  <!-- Trees, added more to match placement -->
+  <!-- Tree left hill -->
+  <g transform="translate(100, 480)">
+    <ellipse cx="0" cy="20" rx="40" ry="30" fill="#5d7e1d" opacity="0.85"/>
+    <ellipse cx="-15" cy="0" rx="32" ry="25" fill="#7fa87f"/>
+    <ellipse cx="18" cy="-5" rx="36" ry="28" fill="#8cb828"/>
+    <rect x="-10" y="35" width="20" height="70" fill="#4e3427" rx="5"/>
+  </g>
+  
+  <!-- Tree mid left -->
+  <g transform="translate(300, 520)">
+    <ellipse cx="0" cy="15" rx="35" ry="25" fill="#5d7e1d"/>
+    <ellipse cx="-12" cy="-8" rx="28" ry="22" fill="#7fa87f"/>
+    <ellipse cx="15" cy="-12" rx="32" ry="24" fill="#8cb828"/>
+    <rect x="-8" y="28" width="16" height="60" fill="#4e3427" rx="4"/>
+  </g>
+  
+  <!-- Tree right hill -->
+  <g transform="translate(1300, 500)">
+    <ellipse cx="0" cy="25" rx="38" ry="28" fill="#5d7e1d"/>
+    <ellipse cx="10" cy="5" rx="30" ry="24" fill="#7fa87f"/>
+    <ellipse cx="-14" cy="8" rx="34" ry="26" fill="#8cb828"/>
+    <rect x="-9" y="40" width="18" height="65" fill="#4e3427" rx="5"/>
+  </g>
+  
+  <!-- Additional small tree -->
+  <g transform="translate(800, 550)">
+    <ellipse cx="0" cy="10" rx="25" ry="20" fill="#5d7e1d"/>
+    <ellipse cx="8" cy="-5" rx="20" ry="16" fill="#7fa87f"/>
+    <rect x="-5" y="20" width="10" height="50" fill="#4e3427" rx="3"/>
+  </g>
+
+  <!-- Bushes and grass -->
+  <g transform="translate(150, 700)">
+    <ellipse cx="0" cy="0" rx="50" ry="35" fill="#6ed600" opacity="0.8"/>
+    <ellipse cx="25" cy="-15" rx="40" ry="30" fill="#82e082"/>
+  </g>
+  
+  <g transform="translate(1450, 680)">
+    <ellipse cx="0" cy="0" rx="40" ry="30" fill="#6ed600" opacity="0.8"/>
+  </g>
+  
+  <!-- Foreground grass layer -->
+  <rect y="760" width="1600" height="140" fill="#82e082" opacity="0.35"/>
+
+  <!-- Clouds, added to match image -->
+  <path d="M100 100 Q150 50 200 100 Q250 50 300 100 Q250 150 200 100 Q150 150 100 100 Z" fill="#ffffff" opacity="0.95" />
+  <path d="M500 150 Q550 100 600 150 Q650 100 700 150 Q650 200 600 150 Q550 200 500 150 Z" fill="#ffffff" opacity="0.9" />
+  <path d="M1100 80 Q1150 30 1200 80 Q1250 30 1300 80 Q1250 130 1200 80 Q1150 130 1100 80 Z" fill="#ffffff" opacity="0.92" />
+  <path d="M1400 200 Q1450 150 1500 200 Q1550 150 1600 200" fill="#ffffff" opacity="0.85" />
+
+  <!-- Floating educational elements, more accurate positions and additions -->
+  <!-- + left top -->
+  <text x="100" y="150" font-size="50" fill="#ffffff" opacity="0.75" font-family="Arial">+</text>
+  
+  <!-- Sun icon -->
+  <g transform="translate(200, 100)" opacity="0.7">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <line x1="0" y1="-30" x2="0" y2="-10" stroke="#ffffff" stroke-width="4"/>
+    <line x1="0" y1="10" x2="0" y2="30" stroke="#ffffff" stroke-width="4"/>
+    <line x1="-30" y1="0" x2="-10" y2="0" stroke="#ffffff" stroke-width="4"/>
+    <line x1="10" y1="0" x2="30" y2="0" stroke="#ffffff" stroke-width="4"/>
+  </g>
+  
+  <!-- Circle dot -->
+  <circle cx="300" cy="200" r="10" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.7"/>
+  
+  <!-- Lightbulb upper -->
+  <g transform="translate(400, 250)" opacity="0.75">
+    <circle cx="0" cy="0" r="16" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+    <path d="M-9 0 Q0 -22 9 0" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+    <rect x="-5" y="0" width="10" height="18" fill="none" stroke="#ffffff" stroke-width="3.5" rx="2"/>
+  </g>
+  
+  <!-- x -->
+  <text x="600" y="180" font-size="48" fill="#ffffff" opacity="0.7" font-family="Arial">x</text>
+  
+  <!-- Paper airplane with trail -->
+  <g transform="translate(1300, 100) rotate(-15)">
+    <path d="M0 0 L60 15 L45 30 L70 45 L0 30 Z" fill="#ffffff" opacity="0.85"/>
+    <path d="M0 0 L60 15 L45 30" fill="#e0f7fa" opacity="0.6"/>
+    <line x1="-50" y1="-15" x2="0" y2="0" stroke="#ffffff" stroke-width="3" stroke-dasharray="5 5" opacity="0.7"/>
+  </g>
+  
+  <!-- > symbol -->
+  <text x="1450" y="250" font-size="50" fill="#ffffff" opacity="0.65" font-family="Arial">&gt;</text>
+  
+  <!-- Lower lightbulb -->
+  <g transform="translate(1500, 600)" opacity="0.6">
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <path d="M-7 0 Q0 -18 7 0" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <rect x="-4" y="0" width="8" height="14" fill="none" stroke="#ffffff" stroke-width="3" rx="1.5"/>
+  </g>
+  
+  <!-- Additional symbols to match: <, diamond, etc. -->
+  <text x="50" y="600" font-size="45" fill="#ffffff" opacity="0.7" font-family="Arial">&lt;</text>
+  
+  <!-- Diamond -->
+  <polygon points="800 300, 820 280, 840 300, 820 320" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.65"/>
+  
+  <!-- Small sparkles / dots, more added -->
+  <circle cx="250" cy="120" r="5" fill="#ffffff" opacity="0.85"/>
+  <circle cx="700" cy="220" r="6" fill="#ffffff" opacity="0.8"/>
+  <circle cx="1100" cy="300" r="4" fill="#ffffff" opacity="0.75"/>
+  <circle cx="1400" cy="150" r="5" fill="#ffffff" opacity="0.8"/>
+  <circle cx="400" cy="550" r="3" fill="#ffffff" opacity="0.7"/>
+  <circle cx="900" cy="400" r="4" fill="#ffffff" opacity="0.75"/>
+
+</svg>

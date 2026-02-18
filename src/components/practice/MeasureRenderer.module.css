@@ -1,0 +1,153 @@
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+.questionCard {
+  background: white;
+  border-radius: var(--border-radius-xl);
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+}
+
+.questionContent {
+  margin-bottom: 1rem;
+}
+
+.measureArea {
+  background: #dff0fb;
+  border: 2px dashed #8dd0f2;
+  border-radius: 14px;
+  min-height: 180px;
+  padding: 1.25rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.line {
+  height: 6px;
+  background: #555;
+  border-radius: 4px;
+  margin: 0 auto 1.5rem;
+}
+
+.ruler {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 62px;
+  background: linear-gradient(180deg, #f4dda9 0%, #e8c984 100%);
+  border: 1px solid #c39b58;
+  border-radius: 8px;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  z-index: 2;
+}
+
+.ruler:active {
+  cursor: grabbing;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tickStart {
+  transform: none;
+}
+
+.tickEnd {
+  transform: none;
+}
+
+.tickMark {
+  width: 1px;
+  height: 24px;
+  background: #754f24;
+}
+
+.tickLabel {
+  position: absolute;
+  bottom: 6px;
+  font-size: 0.78rem;
+  color: #2f2f2f;
+  font-weight: 600;
+  transform: translateX(-50%);
+  left: 50%;
+}
+
+.tickLabelStart {
+  left: 0;
+  transform: none;
+}
+
+.tickLabelEnd {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.answerRow {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.answerLabel {
+  font-size: 1rem;
+  color: #1f2937;
+}
+
+.answerInput {
+  width: 56px;
+  border: 2px solid #7bc5ec;
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.answerInput:focus {
+  outline: none;
+  border-color: #2ea8e7;
+}
+
+.submitButton {
+  margin-top: 1rem;
+  background: #55be0e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .questionCard {
+    padding: 1.25rem;
+  }
+
+  .measureArea {
+    min-height: 150px;
+    padding: 1rem 0.75rem;
+  }
+
+  .tickLabel {
+    font-size: 0.72rem;
+  }
+
+  .answerLabel {
+    font-size: 0.94rem;
+  }
+}

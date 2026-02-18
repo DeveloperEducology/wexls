@@ -1,0 +1,368 @@
+.page {
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.headerContent {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.7rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logoText {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.nav {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+}
+
+.navLink {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: white;
+    position: relative;
+    padding: 0.5rem 0;
+    transition: var(--transition-base);
+    text-decoration: none;
+}
+
+.navLink:hover {
+    opacity: 0.9;
+}
+
+.authButtons {
+    display: flex;
+    gap: 0.65rem;
+}
+
+.signInBtn,
+.joinBtn {
+    padding: 0.45rem 1rem;
+    border-radius: var(--border-radius-lg);
+    font-weight: 600;
+    font-size: 0.86rem;
+    transition: var(--transition-base);
+    border: none;
+    cursor: pointer;
+}
+
+.signInBtn {
+    background: white;
+    color: #16a34a;
+}
+
+.signInBtn:hover {
+    background: #f0fdf4;
+    transform: translateY(-2px);
+}
+
+.joinBtn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+}
+
+.joinBtn:hover {
+    background: white;
+    color: #16a34a;
+    transform: translateY(-2px);
+}
+
+/* Main Layout */
+.mainContent {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 80px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 184px;
+    background: white;
+    padding: 1.15rem 0.75rem;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 80px;
+    height: fit-content;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.sidebarTitle {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+}
+
+.subjectLink {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.52rem 0.45rem;
+    margin-bottom: 0.35rem;
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.88rem;
+    transition: var(--transition-base);
+    position: relative;
+}
+
+.subjectLink:hover {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.subjectLink.active {
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.subjectIcon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg,
+            hsl(calc(var(--subject-index) * 40), 70%, 60%),
+            hsl(calc(var(--subject-index) * 40), 70%, 50%));
+    color: white;
+    flex-shrink: 0;
+}
+
+.subjectLink.active .subjectIcon {
+    background: white;
+    color: #16a34a;
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    padding: 1.15rem;
+    background: white;
+    margin: 0.9rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.pageHeader {
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.pageTitle {
+    color: #dc2626;
+    font-size: 1.9rem;
+    margin-bottom: 0.45rem;
+    font-weight: 700;
+}
+
+.pageDescription {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 900px;
+}
+
+/* View Tabs */
+.viewTabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.1rem;
+}
+
+.tab {
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--border-radius-lg);
+    background: #f3f4f6;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.84rem;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.tab:hover {
+    background: #e5e7eb;
+}
+
+.tab.activeTab {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Skills Grid */
+.skillsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+}
+
+.skillColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.unitSection {
+    background: white;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.unitTitle {
+    color: #16a34a;
+    font-size: 0.98rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.skillsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.skillItem {
+    display: flex;
+    gap: 0.45rem;
+    padding: 0.3rem 0;
+    cursor: pointer;
+    transition: var(--transition-base);
+    border-radius: 4px;
+    padding-left: 0.35rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.skillItem:hover {
+    background: #f0fdf4;
+    padding-left: 0.6rem;
+}
+
+.skillCode {
+    font-weight: 700;
+    color: #3b82f6;
+    min-width: 48px;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.skillName {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+.skillItem:hover .skillName {
+    color: #16a34a;
+    font-weight: 500;
+}
+
+.error {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .skillsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .mainContent {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        max-height: none;
+        padding: 1rem;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .sidebarTitle {
+        width: 100%;
+    }
+
+    .subjectLink {
+        margin-bottom: 0;
+    }
+
+    .skillsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .content {
+        margin: 0;
+        border-radius: 0;
+        padding: 0.9rem;
+    }
+
+    .pageTitle {
+        font-size: 1.45rem;
+    }
+
+    .headerContent {
+        flex-wrap: wrap;
+        padding: 0.65rem 0.95rem;
+    }
+
+    .nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        padding-top: 0.5rem;
+        gap: 1.5rem;
+    }
+}

@@ -1,0 +1,36 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#004e92;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000428;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="500" fill="url(#bgGradient)" rx="20"/>
+
+  <text x="50%" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="64" fill="white" letter-spacing="4" filter="url(#glow)">WEXLS</text>
+
+  <g transform="translate(175, 180)">
+    <path d="M20 20 L130 130 M130 20 L20 130" stroke="white" stroke-width="25" stroke-linecap="round"/>
+    
+    <path d="M10 110 L50 80 L80 100 L140 30" fill="none" stroke="#00d2ff" stroke-width="8" stroke-linejoin="round" filter="url(#glow)"/>
+    <path d="M130 30 L142 28 L140 40" fill="#00d2ff" filter="url(#glow)"/>
+  </g>
+
+  <g fill="white" font-family="serif" font-size="18" opacity="0.8">
+    <text x="180" y="270">Δ</text>
+    <text x="310" y="230">Σ</text>
+    <text x="250" y="210">ε</text>
+    <text x="290" y="300">π</text>
+  </g>
+
+  <text x="50%" y="400" text-anchor="middle" font-family="Verdana, sans-serif" font-size="22" fill="#cccccc" letter-spacing="1">Solving for your potential</text>
+</svg>

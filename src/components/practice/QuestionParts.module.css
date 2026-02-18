@@ -1,0 +1,121 @@
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.partWrapper {
+    display: inline-flex;
+    align-items: flex-start;
+}
+
+.inlinePart {
+    width: auto;
+    max-width: 100%;
+}
+
+.verticalPart {
+    width: 100%;
+    display: flex;
+}
+
+.text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.textRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.text code {
+    background: #e2e8f0;
+    border-radius: 4px;
+    padding: 0.08rem 0.35rem;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.imageContainer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0.5rem 0;
+}
+
+.image {
+    border-radius: var(--border-radius-sm);
+    object-fit: contain;
+    max-width: min(100%, 320px);
+    height: 150px !important;
+    width: auto !important;
+}
+
+.urlImage {
+    border-radius: var(--border-radius-sm);
+    object-fit: contain;
+    max-width: min(100%, 320px);
+    height: 150px !important;
+    width: auto !important;
+}
+
+.svgContainer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1rem 0;
+}
+
+.svgContainer svg {
+    max-width: min(100%, 320px);
+    max-height: 240px;
+    height: auto;
+}
+
+.sequence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0;
+}
+
+.math {
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 1.08rem;
+    font-style: italic;
+    color: #3b82f6;
+}
+
+@media (max-width: 768px) {
+    .text {
+        font-size: 0.96rem;
+    }
+
+    .image,
+    .urlImage {
+        max-width: min(100%, 220px);
+    }
+
+    .image,
+    .urlImage {
+        height: 80px !important;
+    }
+
+    .svgContainer svg {
+        max-width: min(100%, 220px);
+        max-height: 160px;
+    }
+
+    .sequence {
+        gap: 0.5rem;
+    }
+}

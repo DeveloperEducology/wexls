@@ -1,0 +1,58 @@
+.loading {
+  font-size: 0.86rem;
+  color: #7890a8;
+  font-weight: 700;
+  min-width: 48px;
+  text-align: right;
+}
+
+.signInBtn,
+.joinBtn,
+.signOutBtn,
+.userBadge {
+  padding: 0.625rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.signInBtn {
+  background: transparent;
+  color: #16a34a;
+  border: 2px solid #16a34a;
+}
+
+.joinBtn {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  color: white;
+}
+
+.userBadge {
+  background: #e8f6ff;
+  color: #0f6ea8;
+  border: 1px solid #bfe1f5;
+}
+
+.signOutBtn {
+  border: 2px solid #c6d9ea;
+  background: #fff;
+  color: #32506b;
+}
+
+@media (max-width: 768px) {
+  .signInBtn,
+  .joinBtn,
+  .signOutBtn,
+  .userBadge {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .userBadge {
+    max-width: 118px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
