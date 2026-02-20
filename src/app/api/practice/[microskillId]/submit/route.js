@@ -100,8 +100,9 @@ function getOptionLabel(option, index) {
   if (typeof option === 'string') {
     const trimmed = option.trim();
     if (
-      !trimmed.startsWith('<') &&
+      !trimmed.toLowerCase().startsWith('<svg') &&
       !/^https?:\/\//i.test(trimmed) &&
+      !trimmed.startsWith('/') &&
       !trimmed.startsWith('data:image/')
     ) {
       return option;

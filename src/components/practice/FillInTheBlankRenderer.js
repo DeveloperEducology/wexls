@@ -640,9 +640,12 @@ export default function FillInTheBlankRenderer({
                         value={userAnswer?.[part.id] || ''}
                         onChange={(e) => handleInputChange(part.id, e.target.value)}
                         disabled={isAnswered}
+                        placeholder={part?.placeholder || ''}
+                        aria-label={part?.placeholder || part?.id || 'blank input'}
                         style={{ width: part.width || '80px' }}
                         inputMode={inputConfig.inputMode}
                         pattern={inputConfig.pattern}
+                        maxLength={Number.isFinite(Number(part?.maxLength)) ? Number(part.maxLength) : undefined}
                     />
                 ));
 

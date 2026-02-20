@@ -2,7 +2,7 @@
 
 import QuestionParts from './QuestionParts';
 import styles from './ImageChoiceRenderer.module.css';
-import { getImageSrc, isImageUrl, isInlineSvg } from './contentUtils';
+import { getImageSrc, hasInlineHtml, isImageUrl, isInlineSvg, sanitizeInlineHtml } from './contentUtils';
 import SafeImage from './SafeImage';
 
 export default function ImageChoiceRenderer({
@@ -86,7 +86,14 @@ export default function ImageChoiceRenderer({
                                     ) : !src ? (
                                         <span className={styles.optionFallback}>No image</span>
                                     ) : (
-                                        <span className={styles.optionText}>{optionText || 'No image'}</span>
+                                        hasInlineHtml(optionText) ? (
+                                            <span
+                                                className={styles.optionText}
+                                                dangerouslySetInnerHTML={{ __html: sanitizeInlineHtml(optionText) }}
+                                            />
+                                        ) : (
+                                            <span className={styles.optionText}>{optionText || 'No image'}</span>
+                                        )
                                     )}
                                 </div>
                             </button>

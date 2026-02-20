@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 15, 28, 0.4);
+  background: rgba(5, 15, 28, 0.42);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -15,12 +15,16 @@
 }
 
 .panel {
-  width: min(960px, 96vw);
-  background: #f7fcff;
+  width: min(1160px, 97vw);
+  background: linear-gradient(180deg, #fafdff 0%, #f1f8ff 100%);
   border: 1px solid #b9dcf2;
   border-radius: 14px;
   box-shadow: 0 20px 40px rgba(9, 46, 74, 0.28);
   padding: 0.85rem;
+}
+
+.panelLarge {
+  padding: 1rem;
 }
 
 .inlinePanel {
@@ -34,10 +38,12 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   margin-bottom: 0.6rem;
+  align-items: center;
 }
 
 .toolButton,
-.closeButton {
+.closeButton,
+.toggleButton {
   border: 1px solid #88c8eb;
   background: #fff;
   color: #0c4f7c;
@@ -46,6 +52,11 @@
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.spacer {
+  flex: 1;
+  min-width: 8px;
 }
 
 .toolButton:disabled {
@@ -66,14 +77,135 @@
   color: #fff;
 }
 
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+  padding: 0.45rem 0.2rem 0.1rem;
+}
+
+.swatchRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.colorSwatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(12, 79, 124, 0.25);
+  cursor: pointer;
+}
+
+.colorActive {
+  box-shadow: 0 0 0 2px #0f6ea8;
+}
+
+.sizeControls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sizeLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #376283;
+}
+
+.sizeSlider {
+  width: 110px;
+}
+
+.textInput {
+  border: 1px solid #9ecce8;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  color: #0f3354;
+  font-size: 0.78rem;
+  min-width: 180px;
+}
+
+.toggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.toggleButton {
+  padding: 0.34rem 0.64rem;
+  font-size: 0.74rem;
+  border-radius: 999px;
+}
+
+.activeToggle {
+  background: #0f6ea8;
+  border-color: #0f6ea8;
+  color: #fff;
+}
+
+.shortcutHint {
+  margin-left: auto;
+  color: #5b7791;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .canvas {
   width: 100%;
-  height: min(46vh, 420px);
-  background: #ffffff;
+  height: min(67vh, 640px);
+  background-color: #ffffff;
   border: 2px dashed #9bd1ef;
   border-radius: 10px;
   touch-action: none;
   display: block;
+  box-shadow: inset 0 2px 8px rgba(9, 46, 74, 0.06);
+}
+
+.gridLine {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(15, 110, 168, 0.08) 0px,
+      rgba(15, 110, 168, 0.08) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}
+
+.gridMath {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(15, 110, 168, 0.06) 0px,
+      rgba(15, 110, 168, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15, 110, 168, 0.06) 0px,
+      rgba(15, 110, 168, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}
+
+.canvasHighContrast {
+  border-color: #2563eb;
+  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.canvasLarge {
+  height: min(72vh, 680px);
 }
 
 @media (max-width: 640px) {
@@ -86,12 +218,44 @@
   }
 
   .toolButton,
-  .closeButton {
+  .closeButton,
+  .toggleButton {
     font-size: 0.74rem;
-    padding: 0.35rem 0.55rem;
+    padding: 0.34rem 0.56rem;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sizeControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sizeSlider {
+    width: min(180px, 52vw);
+  }
+
+  .textInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .shortcutHint {
+    margin-left: 0;
+    width: 100%;
+    font-size: 0.68rem;
   }
 
   .canvas {
-    height: min(44vh, 300px);
+    height: min(60vh, 500px);
+  }
+
+  .canvasLarge {
+    height: min(66vh, 560px);
   }
 }

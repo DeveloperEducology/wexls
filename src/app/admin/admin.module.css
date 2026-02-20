@@ -1,0 +1,229 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.header p {
+  font-size: 0.9rem;
+  color: #5a7188;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.headerActions button,
+.headerActions a,
+.card button,
+.qControls button,
+.questionsSection button,
+.treeLine button {
+  border: 1px solid #93caea;
+  border-radius: 8px;
+  background: #0f6ea8;
+  color: #fff;
+  padding: 0.45rem 0.72rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.headerActions a {
+  text-decoration: none;
+}
+
+.error,
+.success {
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.error {
+  background: #fff1f1;
+  color: #ac2323;
+  border: 1px solid #f3c2c2;
+}
+
+.success {
+  background: #eefcf2;
+  color: #23743f;
+  border: 1px solid #bfeccf;
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.card,
+.catalogSection,
+.questionsSection {
+  background: #fff;
+  border: 1px solid #d7eaf7;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(7, 58, 97, 0.08);
+}
+
+.card {
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.card h2,
+.catalogSection h2,
+.questionsSection h2 {
+  font-size: 0.95rem;
+  color: #204764;
+}
+
+.card input,
+.card select,
+.questionsSection input,
+.questionsSection select,
+.questionsSection textarea {
+  width: 100%;
+  border: 1px solid #cfe3f3;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.82rem;
+}
+
+.catalogSection,
+.questionsSection {
+  padding: 0.8rem;
+}
+
+.treeWrap {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.treeGrade,
+.treeSubject,
+.treeUnit,
+.treeSkill {
+  border-left: 2px solid #d8ebf7;
+  padding-left: 0.55rem;
+}
+
+.treeLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #2e4f6a;
+  padding: 0.2rem 0;
+}
+
+.treeLine button {
+  background: #fff;
+  color: #b22727;
+  border-color: #efb3b3;
+  padding: 0.2rem 0.45rem;
+}
+
+.qControls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.qFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #3f5b72;
+  border: 1px solid #d7eaf8;
+  border-radius: 8px;
+  padding: 0.42rem 0.5rem;
+}
+
+.check input {
+  width: auto;
+}
+
+.questionsSection textarea {
+  margin-bottom: 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid #deecf7;
+  border-radius: 10px;
+  margin-top: 0.6rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #ecf3f9;
+  padding: 0.4rem 0.45rem;
+  text-align: left;
+}
+
+.table th {
+  font-size: 0.7rem;
+  color: #5f7690;
+  text-transform: uppercase;
+}
+
+.table button {
+  background: #fff;
+  color: #b22727;
+  border-color: #efb3b3;
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 1100px) {
+  .grid4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .qFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid4,
+  .qFormGrid,
+  .qControls {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+}
+

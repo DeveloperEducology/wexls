@@ -71,7 +71,7 @@
 }
 
 .input {
-    padding: 0.5rem 0.75rem;
+    padding: 0.3rem 0.75rem;
     font-size: 0.96rem;
     border: 2px solid #cbd5e1;
     border-radius: var(--border-radius-sm);

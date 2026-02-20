@@ -3,6 +3,7 @@ import GradeCard from '@/components/GradeCard';
 import HomeAuthStatus from '@/components/HomeAuthStatus';
 import styles from './page.module.css';
 import { getHomeGradesData } from '@/lib/curriculum/server';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Home',
@@ -25,6 +26,7 @@ export default async function Home() {
           <nav className={styles.nav}>
             <a href="#" className={styles.navLink}>Learning</a>
             <a href="#" className={styles.navLink}>Analytics</a>
+            <Link href="/admin" className={styles.navLink}>Admin</Link>
           </nav>
           <div className={styles.authButtons}>
             <HomeAuthStatus />

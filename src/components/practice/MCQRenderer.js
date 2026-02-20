@@ -2,7 +2,7 @@
 
 import QuestionParts from './QuestionParts';
 import styles from './MCQRenderer.module.css';
-import { getImageSrc, isImageUrl, isInlineSvg } from './contentUtils';
+import { getImageSrc, hasInlineHtml, isImageUrl, isInlineSvg, sanitizeInlineHtml } from './contentUtils';
 import SafeImage from './SafeImage';
 
 export default function MCQRenderer({
@@ -75,7 +75,14 @@ export default function MCQRenderer({
                                     sizes="(max-width: 768px) 40vw, 220px"
                                 />
                             ) : (
-                                <span className={styles.optionText}>{optionText}</span>
+                                hasInlineHtml(optionText) ? (
+                                    <span
+                                        className={styles.optionText}
+                                        dangerouslySetInnerHTML={{ __html: sanitizeInlineHtml(optionText) }}
+                                    />
+                                ) : (
+                                    <span className={styles.optionText}>{optionText}</span>
+                                )
                             )}
                         </button>
                             );

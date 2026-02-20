@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { resolveMicroskillIdByKey } from '@/lib/curriculum/server';
 import {
+  appendCycleRecentQuestionIds,
   chooseNextQuestion,
   fetchQuestionsByMicroskill,
+  getAdaptivePolicyVersion,
+  getRecoveryContextFromAttempts,
   getSessionState,
   getStudentSkillState,
   toPublicQuestion,
@@ -48,24 +51,37 @@ export async function POST(req) {
       skillState?.difficulty_band ??
       'easy';
 
+    const recoveryContext = await getRecoveryContextFromAttempts(supabase, { sessionId });
+
     const result = chooseNextQuestion({
       questions,
       targetDifficulty,
       recentQuestionIds: sessionState?.recent_question_ids || [],
+      remediationRecentQuestionIds: sessionState?.remediation_recent_question_ids || [],
       excludeQuestionId: sessionState?.last_question_id || null,
+      remediation: recoveryContext.inRecovery
+        ? {
+            misconceptionCode: recoveryContext.misconceptionCode,
+            remaining: recoveryContext.remediationRemaining,
+          }
+        : null,
     });
 
     if (result.question && sessionState?.id) {
-      const updatedRecent = [
-        ...((sessionState?.recent_question_ids || []).map(String)),
-        String(result.question.id),
-      ].slice(-20);
+      const updatedRecent = appendCycleRecentQuestionIds({
+        prevRecentQuestionIds: sessionState?.recent_question_ids || [],
+        newQuestionId: result.question.id,
+        availableQuestionIds: questions.map((q) => q.id),
+      });
 
       await upsertSessionState(supabase, {
         ...sessionState,
         id: sessionState.id,
         last_question_id: result.question.id,
         recent_question_ids: updatedRecent,
+        remediation_recent_question_ids: result.reason === 'misconception_remediation'
+          ? [...((sessionState?.remediation_recent_question_ids || []).map(String)), String(result.question.id)]
+          : (sessionState?.remediation_recent_question_ids || []),
         updated_at: new Date().toISOString(),
       });
     }
@@ -73,9 +89,13 @@ export async function POST(req) {
     return NextResponse.json({
       question: toPublicQuestion(result.question),
       selectionMeta: {
-        policy: 'core_bandit_v1',
+        policy: getAdaptivePolicyVersion(),
         reason: result.reason,
+        debug: result.debug ?? null,
         difficulty: targetDifficulty,
+        phase: recoveryContext.inRecovery ? 'recovery' : (sessionState?.phase ?? 'core'),
+        remediationRemaining: recoveryContext.remediationRemaining,
+        remediationCode: recoveryContext.misconceptionCode,
         conceptTags: result.question?.adaptiveConfig?.conceptTags || [],
       },
     });

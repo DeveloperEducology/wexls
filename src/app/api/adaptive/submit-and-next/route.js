@@ -2,13 +2,19 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { resolveMicroskillIdByKey } from '@/lib/curriculum/server';
 import {
+  appendCycleRecentQuestionIds,
   chooseNextQuestion,
   computeMasteryUpdate,
+  computeServerSmartScoreDelta,
   computeSessionUpdate,
+  detectMisconceptionCode,
   fetchQuestionsByMicroskill,
+  getAdaptivePolicyVersion,
+  getRecoveryContextFromAttempts,
   getSessionState,
   getStudentSkillState,
   insertAttemptEvent,
+  insertMisconceptionEvent,
   toPublicQuestion,
   upsertSessionState,
   upsertStudentSkillState,
@@ -24,8 +30,9 @@ function buildBasicFeedback(question) {
     if (typeof option === 'string') {
       const trimmed = option.trim();
       if (
-        !trimmed.startsWith('<') &&
+        !trimmed.toLowerCase().startsWith('<svg') &&
         !/^https?:\/\//i.test(trimmed) &&
+        !trimmed.startsWith('/') &&
         !trimmed.startsWith('data:image/')
       ) {
         return option;
@@ -153,10 +160,11 @@ export async function POST(req) {
       });
     }
 
-    const [questions, prevSession, prevSkill] = await Promise.all([
+    const [questions, prevSession, prevSkill, priorRecoveryContext] = await Promise.all([
       fetchQuestionsByMicroskill(supabase, microskillId),
       getSessionState(supabase, sessionId),
       getStudentSkillState(supabase, studentId, microskillId),
+      getRecoveryContextFromAttempts(supabase, { sessionId }),
     ]);
 
     const currentQuestion = questions.find((q) => String(q.id) === questionId);
@@ -165,6 +173,14 @@ export async function POST(req) {
     }
 
     const isCorrect = validateAnswer(currentQuestion, answer);
+    const detectedMisconceptionCode = detectMisconceptionCode({
+      question: currentQuestion,
+      answer,
+      isCorrect,
+    });
+    const misconceptionCodeForWrongAnswer = !isCorrect
+      ? (detectedMisconceptionCode || `incorrect_${String(currentQuestion?.type || 'unknown').toLowerCase()}`)
+      : null;
     const feedback = buildBasicFeedback(currentQuestion);
     const mastery = computeMasteryUpdate({
       prevState: prevSkill,
@@ -195,29 +211,71 @@ export async function POST(req) {
       isCorrect,
       currentQuestionId: questionId,
       activeDifficulty: skillRow?.difficulty_band ?? mastery.difficultyBand,
+      misconceptionCode: misconceptionCodeForWrongAnswer,
+      masteryScore: mastery.masteryScore,
+      confidence: mastery.confidence,
+      avgLatencyMs: mastery.avgLatencyMs,
+    });
+
+    const effectiveRemediationCode = !isCorrect
+      ? misconceptionCodeForWrongAnswer
+      : (priorRecoveryContext?.misconceptionCode ?? null);
+    const effectiveRemediationRemaining = !isCorrect
+      ? (effectiveRemediationCode ? 2 : 0)
+      : Math.max(0, Number(priorRecoveryContext?.remediationRemaining ?? 0) - 1);
+    const inRecoveryNow = effectiveRemediationRemaining > 0;
+    const effectivePhase = inRecoveryNow ? 'recovery' : sessionUpdate.phase;
+
+    const cycleRecentQuestionIds = appendCycleRecentQuestionIds({
+      prevRecentQuestionIds: prevSession?.recent_question_ids || [],
+      newQuestionId: questionId,
+      availableQuestionIds: questions.map((q) => q.id),
     });
 
     const sessionRow = await upsertSessionState(supabase, {
       id: sessionId,
       student_id: studentId,
       micro_skill_id: microskillId,
-      phase: sessionUpdate.phase,
+      phase: effectivePhase,
       target_correct_streak: sessionUpdate.targetCorrectStreak,
       current_streak: sessionUpdate.currentStreak,
       asked_count: sessionUpdate.askedCount,
       correct_count: sessionUpdate.correctCount,
       active_difficulty: sessionUpdate.activeDifficulty,
       last_question_id: questionId,
-      recent_question_ids: sessionUpdate.recentQuestionIds,
+      recent_question_ids: cycleRecentQuestionIds,
+      remediation_recent_question_ids: inRecoveryNow
+        ? [...((prevSession?.remediation_recent_question_ids || []).map(String)), String(questionId)]
+        : (prevSession?.remediation_recent_question_ids || []),
+      active_misconception_code: inRecoveryNow ? effectiveRemediationCode : null,
+      remediation_remaining: effectiveRemediationRemaining,
       updated_at: new Date().toISOString(),
-      completed_at: sessionUpdate.phase === 'done' ? new Date().toISOString() : null,
+      completed_at: effectivePhase === 'done' ? new Date().toISOString() : null,
     });
 
     const nextResult = chooseNextQuestion({
       questions,
       targetDifficulty: sessionRow?.active_difficulty ?? mastery.difficultyBand,
       recentQuestionIds: sessionRow?.recent_question_ids || sessionUpdate.recentQuestionIds,
+      remediationRecentQuestionIds: sessionRow?.remediation_recent_question_ids || [],
       excludeQuestionId: questionId,
+      remediation: inRecoveryNow
+        ? {
+          misconceptionCode: effectiveRemediationCode,
+            remaining: effectiveRemediationRemaining,
+          }
+        : null,
+    });
+
+    const smartScoreBreakdown = computeServerSmartScoreDelta({
+      isCorrect,
+      masteryScore: mastery.masteryScore,
+      confidence: mastery.confidence,
+      difficulty: currentQuestion?.difficulty || mastery.difficultyBand,
+      phase: effectivePhase,
+      responseMs,
+      streak: sessionUpdate.currentStreak,
+      missStreak: isCorrect ? 0 : Number(prevSession?.miss_streak ?? 0) + 1,
     });
 
     const responsePayload = {
@@ -233,15 +291,22 @@ export async function POST(req) {
         streak: mastery.streak,
       },
       sessionUpdate: {
-        phase: sessionUpdate.phase,
+        phase: effectivePhase,
         currentStreak: sessionUpdate.currentStreak,
         askedCount: sessionUpdate.askedCount,
         correctCount: sessionUpdate.correctCount,
+        accuracy: sessionUpdate.accuracy,
       },
+      smartScore: smartScoreBreakdown,
       nextQuestion: toPublicQuestion(nextResult.question),
       selectionMeta: {
-        policy: 'core_bandit_v1',
+        policy: getAdaptivePolicyVersion(),
         reason: nextResult.reason,
+        debug: nextResult.debug ?? null,
+        phase: effectivePhase,
+        difficulty: sessionRow?.active_difficulty ?? mastery.difficultyBand,
+        remediationCode: effectiveRemediationCode,
+        remediationRemaining: effectiveRemediationRemaining,
       },
     };
 
@@ -264,7 +329,7 @@ export async function POST(req) {
           difficultyBand: mastery.difficultyBand,
         },
         sessionUpdate: {
-          phase: sessionUpdate.phase,
+          phase: effectivePhase,
           currentStreak: sessionUpdate.currentStreak,
           askedCount: sessionUpdate.askedCount,
           correctCount: sessionUpdate.correctCount,
@@ -276,8 +341,25 @@ export async function POST(req) {
       },
       selected_difficulty: currentQuestion.difficulty ?? 'easy',
       concept_tags: currentQuestion.adaptiveConfig?.conceptTags || [],
-      misconception_code: currentQuestion.adaptiveConfig?.misconceptionCode ?? null,
+      misconception_code: misconceptionCodeForWrongAnswer ?? null,
     });
+
+    if (!isCorrect && misconceptionCodeForWrongAnswer) {
+      try {
+        await insertMisconceptionEvent(supabase, {
+          student_id: studentId,
+          micro_skill_id: microskillId,
+          session_id: sessionId,
+          question_id: questionId,
+          misconception_code: misconceptionCodeForWrongAnswer,
+          answer_payload: answer,
+          created_at: new Date().toISOString(),
+        });
+      } catch (misconceptionError) {
+        // Keep question flow alive, but surface actual persistence issue for debugging.
+        console.error('Failed to insert misconception event:', misconceptionError);
+      }
+    }
 
     return NextResponse.json(responsePayload);
   } catch (err) {

@@ -49,6 +49,7 @@ export default function SafeImage({
         sizes={sizes}
         style={style}
         priority={priority}
+        loading={priority ? 'eager' : loading}
       />
     );
   }

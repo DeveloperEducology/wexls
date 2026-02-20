@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { resolveMicroskillIdByKey } from '@/lib/curriculum/server';
 import {
+  getAdaptivePolicyVersion,
   getSessionState,
   getStudentSkillState,
   upsertSessionState,
@@ -68,6 +69,9 @@ export async function POST(req) {
         correct_count: 0,
         active_difficulty: skillState?.difficulty_band || 'easy',
         recent_question_ids: [],
+        remediation_recent_question_ids: [],
+        remediation_remaining: 0,
+        active_misconception_code: null,
         updated_at: new Date().toISOString(),
       });
     }
@@ -76,6 +80,7 @@ export async function POST(req) {
       sessionId: sessionState?.id ?? sessionId ?? null,
       phase: sessionState?.phase ?? 'warmup',
       activeDifficulty: sessionState?.active_difficulty ?? skillState?.difficulty_band ?? 'easy',
+      policyVersion: getAdaptivePolicyVersion(),
       mastery: {
         score: Number(skillState?.mastery_score ?? 0.2),
         confidence: Number(skillState?.confidence ?? 0.1),

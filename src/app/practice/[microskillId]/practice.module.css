@@ -575,6 +575,34 @@
     margin-bottom: 0.7rem;
 }
 
+.adaptiveDebugCard {
+    border: 1px solid #d4e8f7;
+    background: #f2f9ff;
+    border-radius: 10px;
+    padding: 0.55rem 0.65rem;
+    margin-bottom: 0.7rem;
+}
+
+.adaptiveDebugTitle {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #1f5f87;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.2rem;
+}
+
+.adaptiveDebugGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.2rem 0.6rem;
+}
+
+.adaptiveDebugGrid span {
+    font-size: 0.72rem;
+    color: #3f607a;
+}
+
 .scoreDebugTitle {
     font-size: 0.72rem;
     font-weight: 800;
@@ -823,6 +851,10 @@
     }
 
     .scoreDebugGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .adaptiveDebugGrid {
         grid-template-columns: 1fr;
     }
 }

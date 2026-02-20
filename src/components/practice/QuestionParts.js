@@ -62,6 +62,9 @@ export default function QuestionParts({ parts }) {
         return (
             <div key={index} className={styles.imageContainer}>
                 {Array.from({ length: repeatCount }).map((_, imageIndex) => (
+                    (() => {
+                        const isAboveFoldImage = index === 0 && imageIndex === 0;
+                        return (
                     <SafeImage
                         key={`img-${index}-${imageIndex}`}
                         src={imageSrc}
@@ -74,7 +77,11 @@ export default function QuestionParts({ parts }) {
                             maxHeight: part.height ? `${part.height}px` : undefined,
                         }}
                         sizes="(max-width: 768px) 70vw, 320px"
+                        priority={isAboveFoldImage}
+                        loading={isAboveFoldImage ? 'eager' : 'lazy'}
                     />
+                        );
+                    })()
                 ))}
             </div>
         );
@@ -95,6 +102,7 @@ export default function QuestionParts({ parts }) {
                     );
                 }
                 if (isImageUrl(part.content)) {
+                    const isAboveFoldImage = index === 0;
                     return (
                         <div key={index} className={styles.imageContainer}>
                             <SafeImage
@@ -104,6 +112,8 @@ export default function QuestionParts({ parts }) {
                                 width={320}
                                 height={150}
                                 sizes="(max-width: 768px) 70vw, 320px"
+                                priority={isAboveFoldImage}
+                                loading={isAboveFoldImage ? 'eager' : 'lazy'}
                             />
                         </div>
                     );

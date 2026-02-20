@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import QuestionRenderer from '@/components/practice/QuestionRenderer';
 import QuestionParts from '@/components/practice/QuestionParts';
 import WorkPad from '@/components/practice/WorkPad';
+import { hasInlineHtml, sanitizeInlineHtml } from '@/components/practice/contentUtils';
 import styles from './practice.module.css';
 
 const CHALLENGE_STAGES = [
@@ -123,6 +124,18 @@ function getOptionLabel(option, index) {
   }
   if (typeof option === 'string' && !isVisualOption(option)) return option;
   return `Option ${index + 1}`;
+}
+
+function renderMaybeInlineHtml(value, className = '') {
+  if (!hasInlineHtml(value)) {
+    return <span className={className}>{value}</span>;
+  }
+  return (
+    <span
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitizeInlineHtml(String(value ?? '')) }}
+    />
+  );
 }
 
 function getSelectedAnswerDisplay(question, answer) {
@@ -378,6 +391,7 @@ export default function PracticePage() {
   const [feedbackData, setFeedbackData] = useState(null);
   const [adaptiveSessionId, setAdaptiveSessionId] = useState(null);
   const [usingAdaptiveApi, setUsingAdaptiveApi] = useState(true);
+  const [adaptiveMeta, setAdaptiveMeta] = useState(null);
   const [questionStartedAt, setQuestionStartedAt] = useState(Date.now());
   const [currentStudentId, setCurrentStudentId] = useState('');
 
@@ -402,6 +416,9 @@ export default function PracticePage() {
     : '/teacher/analytics';
   const withSubmitBehavior = (question) => {
     if (!question) return question;
+    if (question.isMultiSelect) {
+      return { ...question, showSubmitButton: true };
+    }
     if (question.type !== 'mcq') {
       return { ...question, showSubmitButton: true };
     }
@@ -437,6 +454,7 @@ export default function PracticePage() {
       setSeenQuestionIds([]);
       setAdaptiveSessionId(null);
       setUsingAdaptiveApi(true);
+      setAdaptiveMeta(null);
       setAdaptivePhase('warmup');
       setMissStreak(0);
 
@@ -444,21 +462,27 @@ export default function PracticePage() {
         const studentId = await resolveStudentId();
         setCurrentStudentId(studentId || '');
         let firstQuestion = null;
+        let adaptiveInitError = '';
 
         if (studentId) {
-          const sessionRes = await fetch('/api/adaptive/session/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              studentId,
-              microSkillId: microskillId,
-              sessionId: getStoredAdaptiveSessionId(microskillId),
-            }),
-          });
-          const sessionPayload = await sessionRes.json();
-          if (!active) return;
+          try {
+            const sessionRes = await fetch('/api/adaptive/session/start', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                studentId,
+                microSkillId: microskillId,
+                sessionId: getStoredAdaptiveSessionId(microskillId),
+              }),
+            });
+            const sessionPayload = await sessionRes.json();
+            if (!active) return;
 
-          if (sessionRes.ok && sessionPayload.sessionId) {
+            if (!sessionRes.ok || !sessionPayload.sessionId) {
+              const reason = sessionPayload?.error || 'Adaptive session could not start.';
+              throw new Error(reason);
+            }
+
             setAdaptiveSessionId(String(sessionPayload.sessionId));
             setStoredAdaptiveSessionId(microskillId, sessionPayload.sessionId);
             setAdaptivePhase(sessionPayload.phase || 'warmup');
@@ -474,34 +498,43 @@ export default function PracticePage() {
             });
             const nextPayload = await nextRes.json();
             if (!active) return;
-            if (nextRes.ok && nextPayload.question) {
-              firstQuestion = nextPayload.question;
-              setUsingAdaptiveApi(true);
+
+            if (!nextRes.ok || !nextPayload.question) {
+              const reason = nextPayload?.error || 'Adaptive question selection failed.';
+              throw new Error(reason);
             }
+
+            firstQuestion = nextPayload.question;
+            setUsingAdaptiveApi(true);
+            setAdaptiveMeta(nextPayload.selectionMeta || null);
+          } catch (adaptiveError) {
+            setUsingAdaptiveApi(false);
+            setAdaptiveSessionId(null);
+            adaptiveInitError = adaptiveError?.message || 'Adaptive init failed';
           }
         }
 
         if (!firstQuestion) {
-          setUsingAdaptiveApi(false);
           const res = await fetch(`/api/practice/${microskillId}`, { cache: 'no-store' });
           const payload = await res.json();
           if (!active) return;
 
-          if (!res.ok) {
-            setSubmitError(payload.error || 'Could not load first question.');
-            setCurrentQuestion(null);
-            return;
+          if (!res.ok || !payload?.question) {
+            throw new Error(payload?.error || 'Could not load first question.');
           }
 
-          firstQuestion = payload.question ?? null;
+          firstQuestion = payload.question;
+          if (adaptiveInitError) {
+            setSubmitError(`Adaptive disabled: ${adaptiveInitError}`);
+          }
         }
 
         setCurrentQuestion(firstQuestion);
         setQuestionStartedAt(Date.now());
         setSeenQuestionIds(firstQuestion?.id ? [String(firstQuestion.id)] : []);
-      } catch {
+      } catch (error) {
         if (!active) return;
-        setSubmitError('Could not load first question. Please refresh.');
+        setSubmitError(error?.message || 'Could not load first question. Please refresh.');
         setCurrentQuestion(null);
       } finally {
         if (!active) return;
@@ -614,8 +647,10 @@ export default function PracticePage() {
       if (usingAdaptiveApi && adaptiveSessionId) {
         try {
           payload = await submitWithRetry('/api/adaptive/submit-and-next', submitBody);
-        } catch {
+        } catch (adaptiveError) {
           setUsingAdaptiveApi(false);
+          setAdaptiveSessionId(null);
+          setSubmitError(`Adaptive submit failed, switched to fallback mode: ${adaptiveError?.message || 'Unknown error'}`);
           payload = await submitWithRetry(`/api/practice/${microskillId}/submit`, submitBody);
         }
       } else {
@@ -628,6 +663,7 @@ export default function PracticePage() {
       setQuestionsAnswered((prev) => prev + 1);
       const returnedPhase = payload?.sessionUpdate?.phase || adaptivePhase;
       setAdaptivePhase(returnedPhase);
+      setAdaptiveMeta(payload?.selectionMeta || null);
 
       const nextStreak = correct ? streak + 1 : 0;
       const nextMissStreak = correct ? 0 : missStreak + 1;
@@ -644,10 +680,14 @@ export default function PracticePage() {
         streak: nextStreak,
         missStreak: nextMissStreak,
       });
-      setSmartScore((prev) => Math.max(0, Math.min(100, prev + scoreResult.delta)));
+      const serverScoreResult = payload?.smartScore && typeof payload.smartScore === 'object'
+        ? payload.smartScore
+        : null;
+      const effectiveScore = serverScoreResult || scoreResult;
+      setSmartScore((prev) => Math.max(0, Math.min(100, prev + Number(effectiveScore.delta || 0))));
       setSmartScoreBreakdown({
-        delta: scoreResult.delta,
-        details: scoreResult.details,
+        delta: Number(effectiveScore.delta || 0),
+        details: effectiveScore.details,
         questionId: currentQuestion?.id || null,
       });
 
@@ -810,7 +850,12 @@ export default function PracticePage() {
 
           {!isAnswered && isWorkPadOpen && (
             <div className={styles.inlineWorkPadWrap}>
-              <WorkPad open={isWorkPadOpen} mode="inline" onClose={() => setIsWorkPadOpen(false)} />
+              <WorkPad
+                open={isWorkPadOpen}
+                mode="inline"
+                storageKey={currentQuestion?.id || microskillId}
+                onClose={() => setIsWorkPadOpen(false)}
+              />
             </div>
           )}
 
@@ -829,6 +874,20 @@ export default function PracticePage() {
                 <span>Confidence: {Number(smartScoreBreakdown.details?.confidence ?? 0).toFixed(2)}</span>
                 <span>Response: {Math.round(Number(smartScoreBreakdown.details?.responseMs ?? 0))}ms</span>
                 <span>Fast-guess penalty: {Number(smartScoreBreakdown.details?.fastGuessPenalty ?? 0).toFixed(1)}</span>
+              </div>
+            </div>
+          )}
+
+          {adaptiveMeta && (
+            <div className={styles.adaptiveDebugCard}>
+              <div className={styles.adaptiveDebugTitle}>Adaptive Debug</div>
+              <div className={styles.adaptiveDebugGrid}>
+                <span>Policy: {adaptiveMeta.policy || 'n/a'}</span>
+                <span>Phase: {adaptiveMeta.phase || adaptivePhase || 'n/a'}</span>
+                <span>Reason: {adaptiveMeta.reason || 'n/a'}</span>
+                <span>Difficulty: {adaptiveMeta.difficulty || currentQuestion?.difficulty || 'n/a'}</span>
+                <span>Remediation code: {adaptiveMeta.remediationCode || 'none'}</span>
+                <span>Remediation left: {Number(adaptiveMeta.remediationRemaining ?? 0)}</span>
               </div>
             </div>
           )}
@@ -872,7 +931,7 @@ export default function PracticePage() {
               <h2 className={styles.incorrectTitle}>Sorry, incorrect...</h2>
               <div className={styles.correctAnswerRow}>
                 <span className={styles.correctAnswerLabel}>The correct answer is:</span>
-                <span className={styles.correctAnswerValue}>{correctAnswerDisplay || 'See explanation below'}</span>
+                {renderMaybeInlineHtml(correctAnswerDisplay || 'See explanation below', styles.correctAnswerValue)}
               </div>
 
               <h3 className={styles.explanationHeading}>Explanation</h3>
@@ -900,7 +959,7 @@ export default function PracticePage() {
                         key={`review-opt-${index}`}
                         className={`${styles.reviewOption} ${selectedIndexSet.has(index) ? styles.reviewSelected : ''} ${correctIndexSet.has(index) ? styles.reviewCorrect : ''}`}
                       >
-                        <span className={styles.reviewOptionLabel}>{getOptionLabel(option, index)}</span>
+                        {renderMaybeInlineHtml(getOptionLabel(option, index), styles.reviewOptionLabel)}
                         {selectedIndexSet.has(index) && <span className={styles.reviewTag}>Your choice</span>}
                         {correctIndexSet.has(index) && <span className={styles.reviewTagCorrect}>Correct</span>}
                       </div>
@@ -908,7 +967,7 @@ export default function PracticePage() {
                   </div>
                 ) : (
                   <p className={styles.reviewAnswerLine}>
-                    <strong>You answered:</strong> {selectedAnswerDisplay || 'No answer'}
+                    <strong>You answered:</strong> {renderMaybeInlineHtml(selectedAnswerDisplay || 'No answer')}
                   </p>
                 )}
               </div>
@@ -918,7 +977,7 @@ export default function PracticePage() {
                   <QuestionParts parts={solutionParts} />
                 </div>
               ) : (
-                <p className={styles.solution}>{feedbackData?.solution || ''}</p>
+                <p className={styles.solution}>{renderMaybeInlineHtml(feedbackData?.solution || '')}</p>
               )}
 
               <button onClick={handleNext} disabled={isSubmitting} className={styles.nextButton}>
