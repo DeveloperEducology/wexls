@@ -130,6 +130,9 @@ function normalizeQuestionType(value) {
     four_pics_one_word: 'fourPicsOneWord',
     'four-pics-one-word': 'fourPicsOneWord',
     measure: 'measure',
+    shadegrid: 'shadeGrid',
+    shade_grid: 'shadeGrid',
+    'shade-grid': 'shadeGrid',
     sorting: 'sorting',
     mcq: 'mcq',
   };

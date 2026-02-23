@@ -51,6 +51,99 @@ function parseNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseFraction(value) {
+  const text = String(value ?? '').trim();
+  const match = text.match(/^(-?\d+)\s*\/\s*(\d+)$/);
+  if (!match) return null;
+  const numerator = Number(match[1]);
+  const denominator = Number(match[2]);
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
+  return { numerator, denominator };
+}
+
+function extractFractionFromParts(parts) {
+  const list = Array.isArray(parts) ? parts : [];
+  for (const part of list) {
+    const content = String(part?.content ?? '');
+    const direct = parseFraction(content);
+    if (direct) return direct;
+    const embedded = content.match(/(-?\d+)\s*\/\s*(\d+)/);
+    if (embedded) {
+      return {
+        numerator: Number(embedded[1]),
+        denominator: Number(embedded[2]),
+      };
+    }
+  }
+  return null;
+}
+
+function resolveShadeGridGeometry(question) {
+  const config = question?.adaptiveConfig ?? {};
+  const explicitRows = parseNumber(config.gridRows);
+  const explicitCols = parseNumber(config.gridCols);
+  const orientation = String(
+    config.orientation || config.gridOrientation || config.barOrientation || 'vertical'
+  ).toLowerCase() === 'horizontal'
+    ? 'horizontal'
+    : 'vertical';
+  const gridMode = String(config.gridMode || 'auto').toLowerCase();
+  const fraction = (
+    parseFraction(question?.correctAnswerText) ||
+    extractFractionFromParts(question?.parts) ||
+    (parseNumber(config.numerator) != null && parseNumber(config.denominator) != null
+      ? { numerator: parseNumber(config.numerator), denominator: parseNumber(config.denominator) }
+      : null)
+  );
+  const denominator = parseNumber(config.denominator) ?? fraction?.denominator ?? null;
+  const shouldUseFractionBar = (
+    gridMode === 'fractionbar' ||
+    (gridMode === 'auto' && denominator && denominator > 1 && denominator <= 20)
+  );
+
+  let rows = explicitRows;
+  let cols = explicitCols;
+  if (shouldUseFractionBar && denominator) {
+    if (orientation === 'horizontal') {
+      rows = denominator;
+      cols = 1;
+    } else {
+      rows = 1;
+      cols = denominator;
+    }
+  } else if (!(rows && cols)) {
+    if (denominator === 100) {
+      rows = 10;
+      cols = 10;
+    } else {
+      rows = 10;
+      cols = 10;
+    }
+  }
+
+  rows = Math.max(1, Math.min(20, Math.floor(rows || 10)));
+  cols = Math.max(1, Math.min(20, Math.floor(cols || 10)));
+  return { rows, cols, totalCells: rows * cols, fraction };
+}
+
+function parseShadeGridTarget(question) {
+  const config = question?.adaptiveConfig ?? {};
+  const geometry = resolveShadeGridGeometry(question);
+  const explicit = parseNumber(config.targetShaded);
+  if (explicit != null) return explicit;
+
+  const numerator = parseNumber(config.numerator);
+  const denominator = parseNumber(config.denominator);
+  if (numerator != null && denominator != null && denominator > 0) {
+    return Math.round((numerator / denominator) * geometry.totalCells);
+  }
+
+  const fraction = geometry.fraction;
+  if (fraction) return Math.round((fraction.numerator / fraction.denominator) * geometry.totalCells);
+
+  return parseNumber(question?.correctAnswerText);
+}
+
 function getMeasureTarget(question) {
   if (!question || question.type !== 'measure') return null;
 
@@ -129,7 +222,8 @@ function validateAnswer(question, answer) {
     case 'textInput':
       return String(answer ?? '').trim().toLowerCase() === String(question.correctAnswerText ?? '').trim().toLowerCase();
 
-    case 'fillInTheBlank': {
+    case 'fillInTheBlank':
+    case 'gridArithmetic': {
       const correctAnswers = parseMaybeJson(question.correctAnswerText, {});
       if (!correctAnswers || typeof correctAnswers !== 'object') return false;
       return Object.keys(correctAnswers).every((key) => {
@@ -167,6 +261,20 @@ function validateAnswer(question, answer) {
       return Math.abs(actual - expected) < 0.0001;
     }
 
+    case 'shadeGrid': {
+      const expected = parseShadeGridTarget(question);
+      if (expected == null) return false;
+      const actual = (
+        typeof answer === 'number' ? answer :
+          typeof answer === 'string' ? parseNumber(answer) :
+            Array.isArray(answer) ? answer.length :
+              Array.isArray(answer?.selected) ? answer.selected.length :
+                parseNumber(answer?.count)
+      );
+      if (actual == null) return false;
+      return Number(actual) === Number(expected);
+    }
+
     default:
       return false;
   }
@@ -197,7 +305,8 @@ function buildFeedback(question) {
         : '';
       return feedback;
 
-    case 'fillInTheBlank': {
+    case 'fillInTheBlank':
+    case 'gridArithmetic': {
       const parsed = parseMaybeJson(question.correctAnswerText, {});
       if (parsed && typeof parsed === 'object') {
         const arithmeticPart = (question.parts || []).find((part) => part?.type === 'arithmeticLayout');

@@ -1,10 +1,110 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './FillInTheBlankRenderer.module.css';
 import { getImageSrc, hasInlineHtml, isImageUrl, isInlineSvg, sanitizeInlineHtml } from './contentUtils';
 import SpeakerButton from './SpeakerButton';
 import SafeImage from './SafeImage';
+import {
+    extractLatexPlaceholderIds,
+    latexWithInteractivePlaceholders,
+    latexWithPlaceholderBoxes,
+    renderLatexToHtml
+} from './latexUtils';
+
+function InlineLatexBlanks({
+    part,
+    html,
+    placeholderIds,
+    userAnswer,
+    isAnswered,
+    onInputChange,
+    getInputConfig
+}) {
+    const wrapperRef = useRef(null);
+    const [anchors, setAnchors] = useState([]);
+
+    const recomputeAnchors = () => {
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const nodes = Array.from(wrapper.querySelectorAll('[data-blank-id]'));
+        const next = nodes
+            .map((node) => {
+                const id = String(node.getAttribute('data-blank-id') || '').trim();
+                if (!id) return null;
+                const rect = node.getBoundingClientRect();
+                return {
+                    id,
+                    top: rect.top - wrapperRect.top,
+                    left: rect.left - wrapperRect.left,
+                    width: rect.width,
+                    height: rect.height
+                };
+            })
+            .filter(Boolean);
+        setAnchors(next);
+    };
+
+    useEffect(() => {
+        recomputeAnchors();
+        const handle = () => recomputeAnchors();
+        window.addEventListener('resize', handle);
+        return () => window.removeEventListener('resize', handle);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [html, placeholderIds.join('|')]);
+
+    const fallbackIds = useMemo(() => placeholderIds, [placeholderIds]);
+    const visibleAnchors = anchors.length > 0 ? anchors : fallbackIds.map((id, i) => ({
+        id,
+        top: 0,
+        left: i * 90,
+        width: 78,
+        height: 38,
+    }));
+
+    return (
+        <div className={styles.mathLatexWrap}>
+            <div ref={wrapperRef} className={`${styles.mathLatex} ${styles.mathLatexInteractive}`}>
+                <span dangerouslySetInnerHTML={{ __html: html }} />
+                {visibleAnchors.map((anchor) => {
+                    const inputConfig = getInputConfig({ id: anchor.id, answerType: part?.answerType });
+                    const maxLength = Number.isFinite(Number(part?.maxLength)) ? Number(part.maxLength) : 1;
+                    const hasExplicitWidth = part?.blankWidth !== undefined && part?.blankWidth !== null && String(part.blankWidth).trim() !== '';
+                    const autoWidth = maxLength <= 1
+                        ? Math.max(30, Math.min(44, (anchor.width || 40) * 0.62))
+                        : Math.max(46, Math.min(98, (anchor.width || 56) * 0.8));
+                    const width = hasExplicitWidth
+                        ? (typeof part.blankWidth === 'number' ? `${part.blankWidth}px` : String(part.blankWidth))
+                        : `${autoWidth}px`;
+                    const height = Math.max(24, Math.min(38, (anchor.height || 34) - 2));
+                    const top = anchor.top + Math.max(0, ((anchor.height || height) - height) / 2);
+                    const left = anchor.left + Math.max(0, ((anchor.width || autoWidth) - autoWidth) / 2);
+                    return (
+                        <input
+                            key={`latex-inline-${anchor.id}`}
+                            type="text"
+                            className={`${styles.input} ${styles.latexInlineInput}`}
+                            value={userAnswer?.[anchor.id] ?? ''}
+                            onChange={(e) => onInputChange(anchor.id, e.target.value)}
+                            disabled={isAnswered}
+                            aria-label={anchor.id}
+                            inputMode={inputConfig.inputMode}
+                            pattern={inputConfig.pattern}
+                            maxLength={Number.isFinite(Number(part?.maxLength)) ? Number(part.maxLength) : undefined}
+                            style={{
+                                top: `${top}px`,
+                                left: `${left}px`,
+                                width,
+                                height: `${height}px`,
+                            }}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 export default function FillInTheBlankRenderer({
     question,
@@ -168,7 +268,7 @@ export default function FillInTheBlankRenderer({
             entry.cells.length > 0 &&
             entry.cells.every((cell, idx) => {
                 const id = String(cell?.id || `cell_${entry.rowIndex}_${idx}`);
-                return String(userAnswer?.[id] || '').trim() !== '';
+                return String(userAnswer?.[id] ?? '').trim() !== '';
             })
         );
         const firstIncompleteStep = stepCompletion.findIndex((complete) => !complete);
@@ -186,7 +286,7 @@ export default function FillInTheBlankRenderer({
             if (cells.length === 0) return null;
             for (let i = cells.length - 1; i >= 0; i -= 1) {
                 const candidateId = getCellId(rowEntry.rowIndex, cells, i);
-                if (String(userAnswer?.[candidateId] || '').trim() === '') return candidateId;
+                if (String(userAnswer?.[candidateId] ?? '').trim() === '') return candidateId;
             }
             return getCellId(rowEntry.rowIndex, cells, cells.length - 1);
         };
@@ -226,7 +326,7 @@ export default function FillInTheBlankRenderer({
             const meta = cellMetaById.get(targetId);
             if (!meta) return;
 
-            const currentValue = String(userAnswer?.[targetId] || '');
+            const currentValue = String(userAnswer?.[targetId] ?? '');
             const updates = { ...(userAnswer || {}) };
 
             if (currentValue !== '') {
@@ -297,7 +397,7 @@ export default function FillInTheBlankRenderer({
                                                     }}
                                                     type="text"
                                                     className={`${styles.arCellInput} ${isActiveCell ? styles.arCellInputActive : ''}`}
-                                                    value={userAnswer?.[id] || ''}
+                                                    value={userAnswer?.[id] ?? ''}
                                                     onChange={(e) => {
                                                         if (useDigitPad) return;
                                                         let next = e.target.value.toUpperCase();
@@ -353,7 +453,7 @@ export default function FillInTheBlankRenderer({
                                                         }
                                                     }}
                                                     onKeyDown={(e) => {
-                                                        const currentVal = String(userAnswer?.[id] || '');
+                                                        const currentVal = String(userAnswer?.[id] ?? '');
                                                         if (e.key === 'Backspace' && !currentVal && cellIndex < cells.length - 1) {
                                                             const rightId = String(cells[cellIndex + 1]?.id || `cell_${rowIndex}_${cellIndex + 1}`);
                                                             arithmeticCellRefs.current[rightId]?.focus();
@@ -443,7 +543,7 @@ export default function FillInTheBlankRenderer({
                     <input
                         type="text"
                         className={styles.pictureBox}
-                        value={userAnswer?.[left.inputId || 'left_count'] || ''}
+                        value={userAnswer?.[left.inputId || 'left_count'] ?? ''}
                         onChange={(e) => handleInputChange(left.inputId || 'left_count', e.target.value)}
                         disabled={isAnswered}
                         inputMode="numeric"
@@ -458,7 +558,7 @@ export default function FillInTheBlankRenderer({
                     <input
                         type="text"
                         className={styles.pictureBox}
-                        value={userAnswer?.[right.inputId || 'right_count'] || ''}
+                        value={userAnswer?.[right.inputId || 'right_count'] ?? ''}
                         onChange={(e) => handleInputChange(right.inputId || 'right_count', e.target.value)}
                         disabled={isAnswered}
                         inputMode="numeric"
@@ -473,7 +573,7 @@ export default function FillInTheBlankRenderer({
                     <input
                         type="text"
                         className={styles.pictureBox}
-                        value={userAnswer?.[total.inputId || 'total_count'] || ''}
+                        value={userAnswer?.[total.inputId || 'total_count'] ?? ''}
                         onChange={(e) => handleInputChange(total.inputId || 'total_count', e.target.value)}
                         disabled={isAnswered}
                         inputMode="numeric"
@@ -482,6 +582,93 @@ export default function FillInTheBlankRenderer({
                 </div>
 
                 {footer ? <div className={styles.pictureFooter}>{footer}</div> : null}
+            </div>
+        );
+    };
+
+    const renderGridArithmetic = (part) => {
+        const layout = part?.layout || {};
+        const rows = Math.max(1, Math.min(30, Number(layout?.rows || 6)));
+        const cols = Math.max(1, Math.min(30, Number(layout?.cols || 6)));
+        const cellSize = Math.max(24, Math.min(80, Number(layout?.cellSize || 42)));
+        const showBackgroundGrid = Boolean(layout?.showBackgroundGrid);
+        const cells = Array.isArray(layout?.cells) ? layout.cells : [];
+        const borders = Array.isArray(layout?.borders) ? layout.borders : [];
+
+        const cellByCoord = new Map();
+        cells.forEach((cell) => {
+            const r = Number(cell?.r);
+            const c = Number(cell?.c);
+            if (!Number.isFinite(r) || !Number.isFinite(c)) return;
+            cellByCoord.set(`${r}:${c}`, cell);
+        });
+
+        const borderByCoord = new Map();
+        borders.forEach((border) => {
+            const r = Number(border?.r);
+            const c = Number(border?.c);
+            if (!Number.isFinite(r) || !Number.isFinite(c)) return;
+            borderByCoord.set(`${r}:${c}`, border);
+        });
+
+        const items = [];
+        for (let r = 0; r < rows; r += 1) {
+            for (let c = 0; c < cols; c += 1) {
+                const key = `${r}:${c}`;
+                const cell = cellByCoord.get(key);
+                const border = borderByCoord.get(key);
+                const kind = String(cell?.kind || '').toLowerCase();
+                const hasDefinedCell = kind === 'fixed' || kind === 'input';
+
+                let inner = null;
+                if (kind === 'fixed') {
+                    inner = <span className={styles.gridFixedText}>{String(cell?.value ?? '')}</span>;
+                } else if (kind === 'input') {
+                    const inputId = String(cell?.id || `cell_${r}_${c}`);
+                    const inputConfig = getInputConfig({ id: inputId, answerType: cell?.answerType || 'number' });
+                    inner = (
+                        <input
+                            type="text"
+                            className={styles.gridCellInput}
+                            value={userAnswer?.[inputId] ?? ''}
+                            onChange={(e) => handleInputChange(inputId, e.target.value)}
+                            disabled={isAnswered}
+                            aria-label={inputId}
+                            inputMode={inputConfig.inputMode}
+                            pattern={inputConfig.pattern}
+                            maxLength={Number.isFinite(Number(cell?.maxLength)) ? Number(cell.maxLength) : 1}
+                        />
+                    );
+                }
+
+                items.push(
+                    <div
+                        key={`ga-${r}-${c}`}
+                        className={`${styles.gridCell} ${showBackgroundGrid && hasDefinedCell ? styles.gridBackground : ''} ${kind === 'input' ? styles.gridInputHost : ''}`}
+                        style={{
+                            borderTop: border?.top ? '2px solid #111827' : undefined,
+                            borderRight: border?.right ? '2px solid #111827' : undefined,
+                            borderBottom: border?.bottom ? '2px solid #111827' : undefined,
+                            borderLeft: border?.left ? '2px solid #111827' : undefined,
+                        }}
+                    >
+                        {inner}
+                    </div>
+                );
+            }
+        }
+
+        return (
+            <div className={styles.gridArithmeticWrap}>
+                <div
+                    className={styles.gridArithmetic}
+                    style={{
+                        gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+                        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+                    }}
+                >
+                    {items}
+                </div>
             </div>
         );
     };
@@ -504,7 +691,7 @@ export default function FillInTheBlankRenderer({
             entry.cells.length > 0 &&
             entry.cells.every((cell, idx) => {
                 const id = String(cell?.id || `cell_${entry.rowIndex}_${idx}`);
-                return String(userAnswer?.[id] || '').trim() !== '';
+                return String(userAnswer?.[id] ?? '').trim() !== '';
             })
         );
         const firstIncompleteStep = stepCompletion.findIndex((complete) => !complete);
@@ -518,7 +705,7 @@ export default function FillInTheBlankRenderer({
         let targetIndex = cells.length - 1;
         for (let i = cells.length - 1; i >= 0; i -= 1) {
             const id = String(cells[i]?.id || `cell_${targetRow.rowIndex}_${i}`);
-            if (String(userAnswer?.[id] || '').trim() === '') {
+            if (String(userAnswer?.[id] ?? '').trim() === '') {
                 targetIndex = i;
                 break;
             }
@@ -637,7 +824,7 @@ export default function FillInTheBlankRenderer({
                     <input
                         type="text"
                         className={styles.input}
-                        value={userAnswer?.[part.id] || ''}
+                        value={userAnswer?.[part.id] ?? ''}
                         onChange={(e) => handleInputChange(part.id, e.target.value)}
                         disabled={isAnswered}
                         placeholder={part?.placeholder || ''}
@@ -652,19 +839,81 @@ export default function FillInTheBlankRenderer({
             case 'arithmeticLayout':
                 return wrapPart(part, index, renderArithmeticLayout(part));
 
+            case 'mathLatex': {
+                const displayMode = Boolean(part?.displayMode ?? part?.isDisplayMode);
+                const latex = latexWithInteractivePlaceholders(part.content);
+                const placeholderIds = extractLatexPlaceholderIds(part.content);
+                const html = renderLatexToHtml(latex, displayMode);
+                return wrapPart(part, index, (
+                    <InlineLatexBlanks
+                        part={part}
+                        html={html}
+                        placeholderIds={placeholderIds}
+                        userAnswer={userAnswer}
+                        isAnswered={isAnswered}
+                        onInputChange={handleInputChange}
+                        getInputConfig={getInputConfig}
+                    />
+                ));
+            }
+
+            case 'math':
+                return wrapPart(part, index, (
+                    <div className={styles.mathLatex}>
+                        <span
+                            dangerouslySetInnerHTML={{
+                                __html: renderLatexToHtml(latexWithPlaceholderBoxes(part.content), false),
+                            }}
+                        />
+                    </div>
+                ));
+
             case 'pictureEquation':
                 return wrapPart(part, index, renderPictureEquation(part));
+
+            case 'gridArithmetic':
+                return wrapPart(part, index, renderGridArithmetic(part));
 
             default:
                 return null;
         }
     };
 
+    const renderQuestionParts = () => {
+        const parts = Array.isArray(question.parts) ? question.parts : [];
+        const rows = [];
+
+        for (let index = 0; index < parts.length; index += 1) {
+            const part = parts[index];
+            const nextPart = parts[index + 1];
+            const isEquationLabel =
+                part?.type === 'text' &&
+                typeof part?.content === 'string' &&
+                part.content.trim().endsWith('=');
+            const isPairableInput = nextPart?.type === 'input' || nextPart?.type === 'blank';
+
+            if (isEquationLabel && isPairableInput) {
+                rows.push(
+                    <div key={`pair-${index}`} className={styles.pairedRow}>
+                        {renderPart(part, index)}
+                        {renderPart(nextPart, index + 1)}
+                    </div>
+                );
+                index += 1;
+                continue;
+            }
+
+            rows.push(renderPart(part, index));
+        }
+
+        return rows;
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.questionCard}>
                 <div className={styles.questionContent}>
-                    {question.parts.map((part, index) => renderPart(part, index))}
+                    {renderQuestionParts()}
                 </div>
 
                 {question.showSubmitButton && userAnswer && !isAnswered && (

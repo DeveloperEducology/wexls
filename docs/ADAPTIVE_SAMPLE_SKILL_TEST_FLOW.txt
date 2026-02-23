@@ -1,0 +1,178 @@
+ADAPTIVE SAMPLE SKILL TEST FLOW (DEMO)
+======================================
+
+Goal
+----
+Show how the system reacts during a real learner attempt:
+- phase changes
+- misconception detection
+- remediation routing
+- mastery + smartscore updates
+
+
+Demo Setup
+----------
+Student: stu_demo_001
+MicroSkill: add_with_carry_2digit
+Policy: misconception_v2
+Target streak for completion: 5
+
+Question pool (example)
+- Q1 core easy (45 + 12)
+- Q2 core easy (27 + 11)
+- Q3 core easy (36 + 19)
+- Q4 core medium (45 + 37) with misconceptionByOption mapping
+- Q5 remediation easy (carry step visual)
+- Q6 remediation medium (carry in column table)
+- Q7 core medium
+- Q8 core hard
+...
+
+
+Initial Session State (after /api/adaptive/session/start)
+---------------------------------------------------------
+phase = warmup
+activeDifficulty = easy
+masteryScore = 0.20
+confidence = 0.10
+currentStreak = 0
+askedCount = 0
+correctCount = 0
+
+
+Attempt Timeline (Sample)
+-------------------------
+
+Attempt 1
+- Selected: Q1 (reason: target_band_reinforcement)
+- Student answer: correct
+- Response time: 5.2s
+System reaction:
+- phase: warmup
+- streak: 1
+- mastery: 0.20 -> 0.26
+- difficulty: easy
+- smartscore delta: +6 (example)
+
+Attempt 2
+- Selected: Q2 (reason: target_band_reinforcement)
+- Student answer: correct
+- Response time: 4.8s
+System reaction:
+- phase: warmup
+- streak: 2
+- mastery: 0.26 -> 0.32
+- smartscore delta: +6
+
+Attempt 3
+- Selected: Q3 (reason: target_band_reinforcement)
+- Student answer: correct
+- Response time: 4.9s
+System reaction:
+- phase changes: warmup -> core (after 3 asked)
+- streak: 3
+- mastery: 0.32 -> 0.38
+- smartscore delta: +7
+
+Attempt 4 (wrong answer triggers misconception)
+- Selected: Q4 (reason: target_band_reinforcement)
+- Student chooses option index 0
+- misconceptionByOption["0"] = add_no_carry
+System reaction:
+- isCorrect: false
+- detectedMisconceptionCode: add_no_carry
+- phase changes: core/challenge -> recovery
+- remediationRemaining set to 2
+- misconception event logged
+- mastery: 0.38 -> 0.33
+- smartscore delta: -5
+
+Attempt 5 (targeted remediation)
+- Next selected: Q5
+- Selection reason: misconception_remediation
+- Remediation code: add_no_carry
+- Student answer: correct
+System reaction:
+- still in recovery
+- remediationRemaining: 1
+- mastery: 0.33 -> 0.39
+- smartscore delta: +5
+
+Attempt 6 (2nd remediation item)
+- Next selected: Q6
+- Selection reason: misconception_remediation
+- Student answer: correct
+System reaction:
+- recovery exits -> core
+- remediationRemaining: 0
+- mastery: 0.39 -> 0.45
+- smartscore delta: +6
+
+Attempt 7+
+- Back to normal core/challenge flow
+- difficulty gradually increases if streak + mastery support it
+- completion only when strict criteria met:
+  - enough streak
+  - high accuracy
+  - high mastery + confidence
+  - acceptable latency
+
+
+What Learner Sees in UI
+-----------------------
+Practice page Adaptive Debug card:
+- Policy: misconception_v2
+- Phase: warmup/core/challenge/recovery
+- Reason: target_band_reinforcement OR misconception_remediation
+- Difficulty: easy/medium/hard
+- Remediation code: e.g. add_no_carry
+- Remediation left: 2 -> 1 -> 0
+
+
+What Teacher Sees in Analytics
+------------------------------
+Teacher Analytics page:
+- Top misconceptions (e.g., add_no_carry)
+- Recovery entries/exits
+- Avg attempts to exit recovery
+- Remediation hit rate
+- Attempt-level reason and phase
+
+
+Sample Attempt Event (simplified)
+----------------------------------
+{
+  "session_id": "...",
+  "student_id": "stu_demo_001",
+  "micro_skill_id": "...",
+  "question_id": "...",
+  "is_correct": false,
+  "response_ms": 4300,
+  "selected_difficulty": "medium",
+  "misconception_code": "add_no_carry",
+  "correct_payload": {
+    "masteryUpdate": { "newScore": 0.33, "difficultyBand": "easy" },
+    "sessionUpdate": { "phase": "recovery", "askedCount": 4, "correctCount": 3 },
+    "idempotency": {
+      "responsePayload": {
+        "selectionMeta": {
+          "policy": "misconception_v2",
+          "reason": "misconception_remediation",
+          "remediationCode": "add_no_carry",
+          "remediationRemaining": 2
+        }
+      }
+    }
+  }
+}
+
+
+How to run this demo quickly
+----------------------------
+1) Upload questions for one microskill using:
+   supabase/seeds/class2_demo_skill_10_questions.json
+2) Start practice for that microskill.
+3) Intentionally choose mapped wrong options once.
+4) Watch recovery + remediation behavior in Adaptive Debug.
+5) Open /teacher/analytics and verify funnel + misconception stats.
+

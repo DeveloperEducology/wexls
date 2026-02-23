@@ -95,6 +95,151 @@
     color: #3b82f6;
 }
 
+.mathLatex {
+    font-size: 1.18rem;
+    line-height: 1.45;
+    color: #111827;
+    font-weight: 600;
+}
+
+.mathLatex :global(.katex .mord),
+.mathLatex :global(.katex .mbin),
+.mathLatex :global(.katex .mrel) {
+    margin-right: 0.14em;
+}
+
+.mathLatexDisplay {
+    width: 100%;
+}
+
+.longMultiply {
+    font-family: "Nunito", "Baloo 2", "Segoe UI", sans-serif;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 150px;
+    margin: 0.2rem 0;
+}
+
+.longMultiplyGrid {
+    font-family: "Nunito", "Baloo 2", "Segoe UI", sans-serif;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0.2rem 0;
+    --long-cell: 26px;
+    --long-op: 22px;
+}
+
+.longCarryRow,
+.longMathRow,
+.longDividerRow {
+    display: grid;
+    grid-template-columns: var(--long-op) repeat(var(--long-cols, 1), var(--long-cell));
+    align-items: center;
+    justify-items: center;
+}
+
+.longCarryRow {
+    min-height: 14px;
+}
+
+.longCell {
+    width: var(--long-cell);
+    text-align: center;
+    line-height: 1;
+    color: #172136;
+}
+
+.longCarryRow .longCell {
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: #16a34a;
+    min-height: 14px;
+}
+
+.longMathRow .longCell {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.longOpCell {
+    width: var(--long-op);
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #172136;
+}
+
+.longDividerRow {
+    justify-items: stretch;
+    margin: 0.08rem 0 0.12rem;
+}
+
+.longDividerRow .longDivider {
+    grid-column: 2 / -1;
+    border-top: 2px solid #172136;
+    width: 100%;
+    margin: 0;
+}
+
+.longCarry {
+    width: 100%;
+    text-align: right;
+    color: #16a34a;
+    font-size: 0.95rem;
+    font-weight: 700;
+    min-height: 1rem;
+    line-height: 1;
+}
+
+.longRow {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #172136;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+}
+
+.longOperator {
+    margin-right: 0.15rem;
+}
+
+.longDivider {
+    width: 100%;
+    border-top: 2px solid #172136;
+    margin: 0.2rem 0 0.18rem;
+}
+
+.longAnswer {
+    font-size: 2.05rem;
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: 0.02em;
+}
+
+.longBoxes {
+    display: inline-flex;
+    align-items: center;
+}
+
+.longBox {
+    width: 24px;
+    height: 28px;
+    border: 1px dashed #4ba8ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #172136;
+}
+
 @media (max-width: 768px) {
     .text {
         font-size: 0.96rem;
@@ -117,5 +262,29 @@
 
     .sequence {
         gap: 0.5rem;
+    }
+
+    .longRow {
+        font-size: 1.6rem;
+    }
+
+    .longMultiplyGrid {
+        --long-cell: 22px;
+        --long-op: 18px;
+    }
+
+    .longMathRow .longCell,
+    .longOpCell {
+        font-size: 1.55rem;
+    }
+
+    .longAnswer {
+        font-size: 1.7rem;
+    }
+
+    .longBox {
+        width: 20px;
+        height: 24px;
+        font-size: 1.05rem;
     }
 }

@@ -1,0 +1,218 @@
+ADAPTIVE QUESTION CREATION + UPLOAD GUIDE (WEXLS)
+=================================================
+
+Purpose
+-------
+This guide explains, in simple steps, how to:
+1) Create question JSON for adaptive learning
+2) Add misconception mapping
+3) Add remediation tags
+4) Upload questions using the Admin Dashboard
+5) Verify adaptive behavior in Practice + Teacher Analytics
+
+
+1) REQUIRED FIELDS FOR EVERY QUESTION
+-------------------------------------
+Each question object should contain:
+
+- micro_skill_id (UUID)  -> Which skill this question belongs to
+- type                    -> mcq | imageChoice | fillInTheBlank | textInput | sorting | dragAndDrop | measure | fourPicsOneWord
+- difficulty              -> easy | medium | hard
+- complexity              -> number (recommended 1 to 100)
+- marks                   -> number
+- sort_order              -> number (question order fallback)
+- parts                   -> array of content blocks
+- solution                -> explanation shown in feedback
+- adaptive_config         -> adaptive metadata (very important)
+
+Also include answer fields based on type:
+- mcq/imageChoice: correct_answer_index (or correct_answer_indices for multi)
+- fillInTheBlank: correct_answer_text as JSON string
+- textInput/measure/fourPicsOneWord: correct_answer_text string
+- sorting: correct_answer_text as ordered item IDs JSON array
+- dragAndDrop: targetGroupId in drag_items
+
+
+2) ADAPTIVE CONFIG (MOST IMPORTANT)
+-----------------------------------
+Inside each question:
+
+"adaptive_config": {
+  "policyVersion": "misconception_v2",
+  "conceptTags": ["tag1", "tag2"],
+  "targetComplexityBand": "low|mid|high",
+  "inputMode": "default|digit_pad|drag_sort|drag_drop|letter_bank",
+  "misconceptionCode": "fallback_code",
+  "misconceptionByOption": {
+    "0": "wrong_reason_a",
+    "1": "wrong_reason_b"
+  },
+  "misconceptionTags": ["group_label"],
+  "isRemediation": false,
+  "remediationFor": ["some_misconception_code"],
+  "remediationLevel": 0
+}
+
+Meaning:
+- conceptTags: what concept this question measures
+- misconceptionByOption: for MCQ/imageChoice, map each wrong option index -> exact misconception
+- misconceptionCode: fallback misconception if option mapping not available
+- isRemediation: true if this is a targeted recovery question
+- remediationFor: misconception codes this question should fix
+- remediationLevel: 1/2/3 (easy to harder remediation depth)
+
+
+3) SIMPLE MCQ EXAMPLE
+---------------------
+{
+  "micro_skill_id": "REPLACE_UUID",
+  "type": "mcq",
+  "difficulty": "easy",
+  "complexity": 10,
+  "marks": 1,
+  "sort_order": 1,
+  "is_multi_select": false,
+  "show_submit_button": false,
+  "parts": [
+    {
+      "id": "p1",
+      "type": "text",
+      "content": "Which number is greatest?",
+      "isVertical": true,
+      "hasAudio": true
+    }
+  ],
+  "options": ["34", "43", "29", "30"],
+  "correct_answer_index": 1,
+  "correct_answer_indices": [],
+  "correct_answer_text": null,
+  "solution": "43 is greatest.",
+  "adaptive_config": {
+    "policyVersion": "misconception_v2",
+    "conceptTags": ["compare_numbers", "place_value"],
+    "targetComplexityBand": "low",
+    "inputMode": "default",
+    "misconceptionCode": "comparison_error",
+    "misconceptionByOption": {
+      "0": "comparison_reversal",
+      "2": "ones_only_compare",
+      "3": "random_guess"
+    },
+    "isRemediation": false,
+    "remediationLevel": 0
+  }
+}
+
+
+4) SIMPLE FILL-IN EXAMPLE
+-------------------------
+{
+  "micro_skill_id": "REPLACE_UUID",
+  "type": "fillInTheBlank",
+  "difficulty": "easy",
+  "complexity": 8,
+  "marks": 1,
+  "sort_order": 2,
+  "show_submit_button": true,
+  "parts": [
+    { "id": "p1", "type": "text", "content": "7 + 5 =", "isVertical": false, "hasAudio": true },
+    { "id": "answer_1", "type": "input", "content": "", "isVertical": false, "hasAudio": false, "expectedType": "number" }
+  ],
+  "options": [],
+  "correct_answer_index": -1,
+  "correct_answer_indices": [],
+  "correct_answer_text": "{\"answer_1\":\"12\"}",
+  "solution": "7 + 5 = 12.",
+  "adaptive_config": {
+    "policyVersion": "misconception_v2",
+    "conceptTags": ["addition", "number_facts_to_20"],
+    "inputMode": "digit_pad",
+    "misconceptionCode": "add_fact_error",
+    "isRemediation": false,
+    "remediationLevel": 0
+  }
+}
+
+
+5) REMEDIATION QUESTION EXAMPLE
+--------------------------------
+Use this when you want a question to appear during recovery for a misconception.
+
+"adaptive_config": {
+  "policyVersion": "misconception_v2",
+  "conceptTags": ["addition", "carry_over"],
+  "misconceptionCode": "place_value_shift",
+  "isRemediation": true,
+  "remediationFor": ["add_no_carry", "place_value_shift"],
+  "remediationLevel": 1
+}
+
+
+6) RECOMMENDED QUESTION PACK PER SKILL
+---------------------------------------
+For 1 microskill, start with at least:
+- 3 easy core questions
+- 3 medium core questions
+- 2 hard core questions
+- 2 remediation questions (mapped to common misconceptions)
+
+Total: 10+ questions minimum.
+
+
+7) HOW TO UPLOAD IN ADMIN PANEL
+--------------------------------
+Option A: Create one by one
+1) Open /admin
+2) Load curriculum data
+3) Create grade -> subject -> unit -> microskill (if missing)
+4) In Question Builder, select microskill
+5) Paste JSON fields (parts/options/items/adaptive_config)
+6) Click Create Question
+
+Option B: Use seed file and copy objects
+1) Open this demo file:
+   supabase/seeds/class2_demo_skill_10_questions.json
+2) Replace REPLACE_WITH_CLASS2_MICROSKILL_UUID
+3) Copy each object into Question Builder and create
+
+
+8) VALIDATION CHECKLIST BEFORE SAVE
+-----------------------------------
+- micro_skill_id is valid and belongs to desired skill
+- type matches answer field format
+- parts is valid JSON array
+- options/items JSON are valid for that type
+- correct answer field is set correctly
+- adaptive_config has conceptTags and misconception fields
+- remediation questions have isRemediation=true and remediationFor array
+
+
+9) HOW TO VERIFY ADAPTIVE FLOW
+-------------------------------
+In Practice page:
+- Turn on Adaptive Debug panel
+- Answer wrong intentionally on mapped distractor
+- Check:
+  - phase becomes recovery
+  - remediationCode appears
+  - next reason is misconception_remediation
+
+In Teacher Analytics:
+- Use filters (date + phase)
+- Check:
+  - top misconceptions list
+  - recovery entries/exits
+  - remediation hit rate
+
+
+10) COMMON MISTAKES TO AVOID
+-----------------------------
+- Putting plain string in parts instead of JSON array
+- Missing correct_answer_text JSON format for fillInTheBlank
+- Using option text keys in misconceptionByOption (must use option index: "0", "1", ...)
+- No remediation questions for mapped misconceptions
+- Difficulty/complexity values inconsistent across questions
+
+
+
+

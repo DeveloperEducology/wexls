@@ -44,6 +44,26 @@ function parseSolutionParts(solution) {
   return null;
 }
 
+function normalizeSolutionSections(solutionParts) {
+  if (!Array.isArray(solutionParts)) return [];
+
+  return solutionParts
+    .filter((item) => item && typeof item === 'object' && String(item.type || '').toLowerCase() === 'section')
+    .map((section) => {
+      const label = String(section.label || section.tag || 'solve').toLowerCase();
+      const title = String(section.title || '');
+      const parts = Array.isArray(section.contentParts)
+        ? section.contentParts
+        : Array.isArray(section.parts)
+          ? section.parts
+          : Array.isArray(section.contents)
+            ? section.contents
+            : [];
+      return { label, title, parts };
+    })
+    .filter((section) => section.parts.length > 0 || section.title);
+}
+
 function parseMaybeJson(text, fallback = null) {
   if (typeof text !== 'string') return fallback;
   try {
@@ -51,6 +71,85 @@ function parseMaybeJson(text, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function parseFinite(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseFraction(text) {
+  const source = String(text ?? '').trim();
+  const direct = source.match(/^(-?\d+)\s*\/\s*(\d+)$/);
+  if (direct) {
+    return { numerator: Number(direct[1]), denominator: Number(direct[2]) };
+  }
+  const embedded = source.match(/(-?\d+)\s*\/\s*(\d+)/);
+  if (embedded) {
+    return { numerator: Number(embedded[1]), denominator: Number(embedded[2]) };
+  }
+  return null;
+}
+
+function getShadeGridShape(question) {
+  const config = question?.adaptiveConfig || {};
+  const orientation = String(
+    config.orientation || config.gridOrientation || config.barOrientation || 'vertical'
+  ).toLowerCase() === 'horizontal' ? 'horizontal' : 'vertical';
+  const gridMode = String(config.gridMode || 'auto').toLowerCase();
+  const fraction = (
+    parseFraction(question?.correctAnswerText) ||
+    (Array.isArray(question?.parts)
+      ? question.parts.map((p) => parseFraction(p?.content)).find(Boolean)
+      : null) ||
+    (parseFinite(config.numerator) != null && parseFinite(config.denominator) != null
+      ? { numerator: parseFinite(config.numerator), denominator: parseFinite(config.denominator) }
+      : null)
+  );
+  const denominator = parseFinite(config.denominator) ?? fraction?.denominator ?? null;
+  const useFractionBar = (
+    gridMode === 'fractionbar' ||
+    (gridMode === 'auto' && denominator && denominator > 1 && denominator <= 20)
+  );
+
+  let rows = parseFinite(config.gridRows);
+  let cols = parseFinite(config.gridCols);
+  if (useFractionBar && denominator) {
+    if (orientation === 'horizontal') {
+      rows = denominator;
+      cols = 1;
+    } else {
+      rows = 1;
+      cols = denominator;
+    }
+  } else if (!(rows && cols)) {
+    rows = 10;
+    cols = 10;
+  }
+
+  rows = Math.max(1, Math.min(20, Math.floor(rows || 10)));
+  cols = Math.max(1, Math.min(20, Math.floor(cols || 10)));
+  return { rows, cols, totalCells: rows * cols, fraction };
+}
+
+function getShadeGridCorrectAnswer(question, correctAnswerHint = null) {
+  if (!question || question.type !== 'shadeGrid') return null;
+  const config = question?.adaptiveConfig || {};
+  const shape = getShadeGridShape(question);
+
+  const explicitTarget = parseFinite(config.targetShaded);
+  const explicitNumber = parseFinite(question.correctAnswerText);
+  const hintNumber = parseFinite(correctAnswerHint);
+  const fractionTarget = shape.fraction
+    ? Math.round((shape.fraction.numerator / shape.fraction.denominator) * shape.totalCells)
+    : null;
+  const targetRaw = explicitTarget ?? fractionTarget ?? explicitNumber ?? hintNumber ?? 0;
+  const target = Math.max(0, Math.min(shape.totalCells, Math.round(targetRaw)));
+
+  return {
+    selected: Array.from({ length: target }, (_, i) => String(i)),
+    count: target,
+  };
 }
 
 function getCorrectAnswerDisplay(question) {
@@ -83,9 +182,11 @@ function getCorrectAnswerDisplay(question) {
     case 'textInput':
     case 'measure':
     case 'fourPicsOneWord':
+    case 'shadeGrid':
       return String(question.correctAnswerText || '');
 
-    case 'fillInTheBlank': {
+    case 'fillInTheBlank':
+    case 'gridArithmetic': {
       const parsed = parseMaybeJson(question.correctAnswerText, {});
       if (!parsed || typeof parsed !== 'object') return String(question.correctAnswerText || '');
       return Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join(', ');
@@ -154,7 +255,7 @@ function getSelectedAnswerDisplay(question, answer) {
     return getOptionLabel(question.options?.[idx], idx);
   }
 
-  if (question.type === 'fillInTheBlank') {
+  if (question.type === 'fillInTheBlank' || question.type === 'gridArithmetic') {
     if (!answer || typeof answer !== 'object') return 'No answer';
     const parts = Array.isArray(question.parts) ? question.parts : [];
     const arithmeticPart = parts.find((part) => part?.type === 'arithmeticLayout');
@@ -171,6 +272,15 @@ function getSelectedAnswerDisplay(question, answer) {
     }
 
     return Object.entries(answer).map(([k, v]) => `${k}: ${v}`).join(', ');
+  }
+
+  if (question.type === 'shadeGrid') {
+    if (Array.isArray(answer)) return String(answer.length);
+    if (answer && typeof answer === 'object') {
+      if (Array.isArray(answer.selected)) return String(answer.selected.length);
+      if (answer.count != null) return String(answer.count);
+    }
+    return String(answer ?? '');
   }
 
   if (Array.isArray(answer)) {
@@ -428,8 +538,21 @@ export default function PracticePage() {
   const { microskill, subject, grade } = curriculumContext;
   const skillTitle = microskill ? `${microskill.code} ${microskill.name}` : `Skill ${microskillId}`;
   const solutionParts = parseSolutionParts(feedbackData?.solution);
+  const solutionSections = normalizeSolutionSections(solutionParts);
+  const hasStructuredSolution = solutionSections.length > 0;
   const correctAnswerDisplay = feedbackData?.correctAnswerDisplay || '';
   const selectedAnswerDisplay = getSelectedAnswerDisplay(currentQuestion, userAnswer);
+  const shadeGridCorrectAnswer = getShadeGridCorrectAnswer(currentQuestion, correctAnswerDisplay);
+  const reviewQuestion =
+    currentQuestion?.type === 'shadeGrid' && shadeGridCorrectAnswer
+      ? {
+          ...withSubmitBehavior(currentQuestion),
+          adaptiveConfig: {
+            ...(currentQuestion?.adaptiveConfig || {}),
+            targetShaded: shadeGridCorrectAnswer.count,
+          },
+        }
+      : withSubmitBehavior(currentQuestion);
   const isOptionType = currentQuestion?.type === 'mcq' || currentQuestion?.type === 'imageChoice';
   const selectedIndexSet = currentQuestion?.isMultiSelect
     ? new Set(Array.isArray(userAnswer) ? userAnswer.map((value) => Number(value)) : [])
@@ -935,44 +1058,72 @@ export default function PracticePage() {
               </div>
 
               <h3 className={styles.explanationHeading}>Explanation</h3>
-              <div className={styles.reviewCard}>
-                <h4 className={styles.reviewTitle}>Question</h4>
-                <div className={styles.reviewQuestion}>
-                  {currentQuestion?.type === 'fillInTheBlank' ? (
-                    <QuestionRenderer
-                      question={withSubmitBehavior(currentQuestion)}
-                      userAnswer={userAnswer}
-                      onAnswer={() => {}}
-                      onSubmit={() => {}}
-                      isAnswered
-                      isCorrect={false}
-                    />
+              {!hasStructuredSolution && (
+                <div className={styles.reviewCard}>
+                  <h4 className={styles.reviewTitle}>Question</h4>
+                  <div className={styles.reviewQuestion}>
+                    {currentQuestion?.type === 'fillInTheBlank' || currentQuestion?.type === 'gridArithmetic' || currentQuestion?.type === 'shadeGrid' ? (
+                      <QuestionRenderer
+                        question={reviewQuestion}
+                        userAnswer={currentQuestion?.type === 'shadeGrid' ? shadeGridCorrectAnswer : userAnswer}
+                        onAnswer={() => {}}
+                        onSubmit={() => {}}
+                        isAnswered
+                        isCorrect={false}
+                      />
+                    ) : (
+                      <QuestionParts parts={currentQuestion?.parts || []} />
+                    )}
+                  </div>
+
+                  {isOptionType && Array.isArray(currentQuestion?.options) && currentQuestion.options.length > 0 ? (
+                    <div className={styles.reviewOptions}>
+                      {currentQuestion.options.map((option, index) => (
+                        <div
+                          key={`review-opt-${index}`}
+                          className={`${styles.reviewOption} ${selectedIndexSet.has(index) ? styles.reviewSelected : ''} ${correctIndexSet.has(index) ? styles.reviewCorrect : ''}`}
+                        >
+                          {renderMaybeInlineHtml(getOptionLabel(option, index), styles.reviewOptionLabel)}
+                          {selectedIndexSet.has(index) && <span className={styles.reviewTag}>Your choice</span>}
+                          {correctIndexSet.has(index) && <span className={styles.reviewTagCorrect}>Correct</span>}
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <QuestionParts parts={currentQuestion?.parts || []} />
+                    <p className={styles.reviewAnswerLine}>
+                      <strong>You answered:</strong> {renderMaybeInlineHtml(selectedAnswerDisplay || 'No answer')}
+                    </p>
                   )}
                 </div>
+              )}
 
-                {isOptionType && Array.isArray(currentQuestion?.options) && currentQuestion.options.length > 0 ? (
-                  <div className={styles.reviewOptions}>
-                    {currentQuestion.options.map((option, index) => (
-                      <div
-                        key={`review-opt-${index}`}
-                        className={`${styles.reviewOption} ${selectedIndexSet.has(index) ? styles.reviewSelected : ''} ${correctIndexSet.has(index) ? styles.reviewCorrect : ''}`}
-                      >
-                        {renderMaybeInlineHtml(getOptionLabel(option, index), styles.reviewOptionLabel)}
-                        {selectedIndexSet.has(index) && <span className={styles.reviewTag}>Your choice</span>}
-                        {correctIndexSet.has(index) && <span className={styles.reviewTagCorrect}>Correct</span>}
+              {hasStructuredSolution ? (
+                <div className={styles.solutionSections}>
+                  {solutionSections.map((section, idx) => (
+                    (() => {
+                      const first = section.parts[0];
+                      const isDuplicateFirstText = (
+                        section.title &&
+                        first &&
+                        String(first.type || '').toLowerCase() === 'text' &&
+                        String(first.content || '').trim().toLowerCase() === String(section.title).trim().toLowerCase()
+                      );
+                      const visibleParts = isDuplicateFirstText ? section.parts.slice(1) : section.parts;
+                      return (
+                    <div key={`solution-section-${idx}`} className={styles.explanationSection}>
+                      <div className={`${styles.explanationRibbon} ${section.label === 'review' ? styles.ribbonReview : styles.ribbonSolve}`}>
+                        {section.label === 'review' ? 'review' : 'solve'}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.reviewAnswerLine}>
-                    <strong>You answered:</strong> {renderMaybeInlineHtml(selectedAnswerDisplay || 'No answer')}
-                  </p>
-                )}
-              </div>
-
-              {solutionParts ? (
+                      <div className={styles.explanationSectionBody}>
+                        {section.title ? <h4 className={styles.explanationSectionTitle}>{section.title}</h4> : null}
+                        {visibleParts.length > 0 ? <QuestionParts parts={visibleParts} /> : null}
+                      </div>
+                    </div>
+                      );
+                    })()
+                  ))}
+                </div>
+              ) : solutionParts ? (
                 <div className={styles.solution}>
                   <QuestionParts parts={solutionParts} />
                 </div>

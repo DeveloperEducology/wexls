@@ -8,16 +8,19 @@ import DragDropRenderer from './DragDropRenderer';
 import SortingRenderer from './SortingRenderer';
 import FourPicsRenderer from './FourPicsRenderer';
 import MeasureRenderer from './MeasureRenderer';
+import ShadeGridRenderer from './ShadeGridRenderer';
 
 const RENDERER_MAP = {
     mcq: MCQRenderer,
     imageChoice: ImageChoiceRenderer,
     textInput: TextInputRenderer,
     fillInTheBlank: FillInTheBlankRenderer,
+    gridArithmetic: FillInTheBlankRenderer,
     dragAndDrop: DragDropRenderer,
     sorting: SortingRenderer,
     fourPicsOneWord: FourPicsRenderer,
     measure: MeasureRenderer,
+    shadeGrid: ShadeGridRenderer,
 };
 
 export default function QuestionRenderer({

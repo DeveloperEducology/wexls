@@ -57,10 +57,21 @@ function buildBasicFeedback(question) {
           return getOptionLabel(question.options?.[idx], idx);
         }
       }
-      if (question.type === 'fillInTheBlank') {
+      if (question.type === 'fillInTheBlank' || question.type === 'gridArithmetic') {
         try {
           const parsed = JSON.parse(String(question.correctAnswerText ?? ''));
           if (parsed && typeof parsed === 'object') {
+            const arithmeticPart = (question.parts || []).find((part) => part?.type === 'arithmeticLayout');
+            const rows = Array.isArray(arithmeticPart?.layout?.rows) ? arithmeticPart.layout.rows : [];
+            const answerRow = rows.find((row) => String(row?.kind || '').toLowerCase() === 'answer');
+            const cells = Array.isArray(answerRow?.cells) ? answerRow.cells : [];
+
+            if (cells.length > 0) {
+              const prefix = String(answerRow?.prefix || '');
+              const joined = cells.map((cell, idx) => String(parsed[cell?.id ?? `cell_${idx}`] ?? '')).join('');
+              return `${prefix}${joined}`.trim();
+            }
+
             return Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join(', ');
           }
         } catch {}

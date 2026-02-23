@@ -1,4 +1,5 @@
 import "./globals.css";
+import 'katex/dist/katex.min.css';
 import { Baloo_2, Nunito } from 'next/font/google';
 import { getSiteUrl } from '@/lib/seo';
 
